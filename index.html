@@ -726,9 +726,10 @@ function openDetail(p, silent){
     h += fld("Verified reach",
       '<b>'+esc(v.breadth)+'</b>'+
       (v.note?'<p class="note">'+esc(v.note)+'</p>':'')+
+      (v.conflict?'<p class="note" style="color:var(--warn)"><b>Sources disagree:</b> '+esc(v.conflict)+'</p>':'')+
       '<p class="note">Checked '+esc(v.checked)+' ('+age+' days ago)'+
         (age>STALE_DAYS?' — <b>re-check due</b>':'')+' · '+
-        (v.confidence==="issuer"?"issuer documentation":"secondary source")+' · '+
+        ({issuer:"issuer documentation",secondary:"secondary source"}[v.confidence]||"directory matrix")+' · '+
         '<a href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
     h += fld(v.mode==="block"?"Will NOT serve":"Available only in",
       '<div class="cl'+(v.mode==="block"?' no':'')+'">'+
@@ -772,7 +773,7 @@ function openDetail(p, silent){
 
   const gaps=gapsOf(p);
   h += '<div class="verifybox"><span class="lbl">'+(v?"Confirm_This":"Help_Verify")+'</span>'+
-    '<p>'+(v ? 'This one has been checked against '+(v.confidence==="issuer"?"the issuer's own docs":"a secondary source")+
+    '<p>'+(v ? 'Checked against '+({issuer:"the issuer's own docs",secondary:"a secondary source"}[v.confidence]||"a structured directory")+
               '. Published is still not the same as true — did it work where you are?'
             : 'Nobody has verified this provider yet'+(gaps.length?'; it publishes no '+gaps.join(", ").toLowerCase():'')+
               '. Your report is how it gets checked.')+'</p>'+
