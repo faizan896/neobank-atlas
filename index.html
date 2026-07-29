@@ -371,10 +371,10 @@ function initGlobe(){
 
   let downAt = null;
   const gel = document.getElementById("globe");
-  gel.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; });
-  gel.addEventListener("pointerup", e => {
-    if(!downAt || !hoverName) return;
-    const moved = Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]);
+  gel.addEventListener("mousedown", e => { downAt = [e.clientX, e.clientY]; });
+  gel.addEventListener("click", e => {
+    if(!hoverName) return;
+    const moved = downAt ? Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]) : 0;
     downAt = null;
     if(moved < 6) selectCountry(hoverName);   // a click, not a drag
   });
