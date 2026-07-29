@@ -17,7 +17,10 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
-  body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;-webkit-font-smoothing:antialiased}
+  body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  #globe{touch-action:none}          /* let the globe own drag gestures */
+  #rows,.dbody,.modal{-webkit-overflow-scrolling:touch}
   button,input,select,textarea{font-family:inherit;color:inherit}
   button{cursor:pointer;background:none;border:none;padding:0}
   .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase}
@@ -139,15 +142,72 @@
     padding:12px 20px;z-index:9500;opacity:0;transition:.28s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* ---------- tablet ---------- */
   @media(max-width:940px){
     #app{flex-direction:column}
-    #view{flex:0 0 40%}
-    #dir{flex:1;max-width:none;border-left:none;border-top:1px solid var(--rule)}
-    #s-bl,#legend{display:none}
+    #view{flex:0 0 38vh;min-height:230px}
+    #dir{flex:1 1 auto;max-width:none;border-left:none;border-top:1px solid var(--rule)}
+    #s-bl{display:none}
     .head h1{font-size:24px}
-    .head,.filters,.meta-row,.foot,.row,.gapbar,.fld{padding-left:20px;padding-right:20px}
+    .head,.filters,.meta-row,.foot,.row,.gapbar,.note-row,.none,.fld,.mh,.mb{padding-left:20px;padding-right:20px}
+    .verifybox{margin-left:20px;margin-right:20px}
     .row{grid-template-columns:24px 1fr}
-    .row .tags{grid-column:2;max-width:none}
+    .row .tags{grid-column:2;justify-content:flex-start;max-width:none;margin-top:7px}
+  }
+
+  /* ---------- phone ---------- */
+  @media(max-width:600px){
+    #view{flex:0 0 32vh;min-height:200px}
+    #legend{display:none}
+    #s-tl{font-size:9.5px;top:14px;left:16px}
+    #s-br{font-size:9.5px;bottom:14px;right:16px}
+    #reset{top:12px;right:12px;padding:8px 12px}
+
+    /* title and CTA stack; CTA goes full width and finger-sized */
+    .head{padding:18px 16px 16px}
+    .head-top{flex-direction:column;align-items:stretch;gap:14px}
+    .head h1{font-size:29px;margin-top:6px}
+    .cta{width:100%;text-align:center;padding:14px 16px;font-size:10px}
+
+    .gapbar{padding:12px 16px;gap:10px}
+    .gapbar b{font-size:17px}
+    .gapbar span{font-size:7.5px;letter-spacing:.06em}
+
+    .filters{padding:14px 16px 16px}
+    /* 16px stops iOS zooming the page when a field is focused */
+    .uline,.mb select,.mb textarea{font-size:16px}
+    .tag{padding:5px 9px;font-size:9.5px}
+    .row .tags .tag{padding:3px 7px}
+
+    .meta-row{padding:9px 16px;flex-direction:column;gap:3px}
+    .row{padding:14px 16px;gap:10px}
+    .row h3{font-size:15.5px}
+    .row p{font-size:12px}
+    .none,.note-row{padding:28px 16px}
+
+    /* detail: label above value instead of a cramped two-column grid */
+    .dhead{padding:18px 16px 16px}
+    .dhead h2{font-size:23px}
+    .fld{grid-template-columns:1fr;gap:6px;padding:13px 16px}
+    .fld .k{padding-top:0}
+    .verifybox{margin:14px 16px 22px;padding:14px 16px}
+
+    .foot{padding:12px 16px;gap:10px}
+    .foot .m{font-size:8px}
+    .serif{font-size:18px}
+
+    /* modal becomes a sheet instead of a floating box */
+    .ov{padding:0;align-items:flex-end}
+    .modal{max-width:none;max-height:94vh;border-left:none;border-right:none;border-bottom:none}
+    .mh{padding:18px 16px 14px}
+    .mb{padding:16px 16px 22px}
+    .two{flex-direction:column;gap:0}
+    .acts{margin-top:20px;gap:16px}
+    .solid{padding:14px 20px}
+  }
+
+  @media(max-width:600px) and (orientation:landscape){
+    #view{flex:0 0 46vh;min-height:0}
   }
 </style>
 </head>
@@ -186,6 +246,12 @@
       <div class="frow">
         <span class="lbl">Must support</span>
         <div class="tags" id="svcs"></div>
+      </div>
+      <div class="frow">
+        <span class="lbl">Or pick a country</span>
+        <select class="uline" id="pick" style="margin-bottom:0">
+          <option value="">Every country…</option>
+        </select>
       </div>
     </div>
 
@@ -391,6 +457,7 @@ function initGlobe(){
   fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(topo=>{
     feats = topojson.feature(topo, topo.objects.countries).features;
     globe.polygonsData(feats);
+    if(ALL.length) fillSelects();   // geometry can land after the data does
     paint();
   }).catch(()=>{});
 }
@@ -442,10 +509,12 @@ function listForCountry(){
   return VIEW.filter(p => p._cov.set.has(country) || p._cov.global);
 }
 
-function selectCountry(name){
-  country = (country === name) ? null : name;
+function selectCountry(name, keepToggle){
+  country = (!keepToggle && country === name) ? null : (name || null);
   document.getElementById("reset").classList.toggle("on", !!country);
   document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
+  const pk = document.getElementById("pick");
+  if(pk && pk.value !== (country||"")) pk.value = country || "";
   if(country && globe){
     const f = feats.find(x=>x.properties.name===country);
     if(f){
@@ -466,8 +535,10 @@ document.getElementById("reset").onclick = () => selectCountry(country);
 /* ==================== list ==================== */
 function renderList(){
   const res = listForCountry();
+  const noGeom = country && feats.length && !feats.some(f=>f.properties.name===country);
   document.getElementById("count").textContent =
-    res.length + " provider" + (res.length===1?"":"s") + (country ? " · " + country : " worldwide");
+    res.length + " provider" + (res.length===1?"":"s") +
+    (country ? " · " + country + (noGeom ? " (too small to plot)" : "") : " worldwide");
   document.getElementById("s-count").textContent =
     String(res.length).padStart(3,"0") + " PROVIDERS";
 
@@ -624,16 +695,37 @@ function buildChips(){
     sv.appendChild(b);
   });
 }
+/* Every country the user might be in — globe geometry plus anything the
+   dataset mentions. world-atlas 110m omits city-states (Singapore, Hong Kong,
+   Gibraltar), and those are exactly where several providers are based. */
+function allCountries(){
+  const s = new Set(feats.map(f=>f.properties.name));
+  EU.forEach(c=>s.add(norm(c)));
+  ALL.forEach(p=>p._cov.set.forEach(c=>s.add(c)));
+  return [...s].sort((a,b)=>a.localeCompare(b));
+}
 function fillSelects(){
+  const list = allCountries();
+
   const sp = document.getElementById("f-prov");
   sp.innerHTML = "";
   ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>sp.add(new Option(p.name,p.name)));
+
   const sc = document.getElementById("f-ctry");
+  const keepC = sc.value;
   sc.innerHTML = "";
-  const all = new Set();
-  ALL.forEach(p=>p._cov.set.forEach(c=>all.add(c)));
-  (feats.length ? feats.map(f=>f.properties.name) : [...all]).sort()
-    .forEach(c=>sc.add(new Option(c,c)));
+  list.forEach(c=>sc.add(new Option(c,c)));
+  if(keepC) sc.value = keepC;
+
+  const pk = document.getElementById("pick");
+  const keepP = pk.value;
+  pk.innerHTML = "";
+  pk.add(new Option("Every country…",""));
+  list.forEach(c=>{
+    const n = ALL.filter(p=>p._cov.set.has(c)).length;
+    pk.add(new Option(c + (n ? "  ·  " + n : "  ·  0 listed"), c));
+  });
+  pk.value = keepP || (country || "");
 }
 function ingest(data){
   const ents = (data.entities||[]).filter(e=>e.category && e.category!=="traditional");
@@ -652,6 +744,7 @@ function ingest(data){
 buildChips();
 initGlobe();
 document.getElementById("q").addEventListener("input", applyFilters);
+document.getElementById("pick").addEventListener("change", e => selectCountry(e.target.value, true));
 
 fetch("/nb-data.json")
   .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
