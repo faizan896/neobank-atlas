@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neobank Atlas — crypto neobanks &amp; cards by country</title>
-<meta name="description" content="Which crypto neobank actually works in your country? Availability, on/off-ramps and real FX fees — country by country, community verified.">
+<title>Neobank Atlas — which crypto neobank works in your country</title>
+<meta name="description" content="Verified country availability, on/off-ramps and real FX fees for crypto neobanks and cards. Pick your country and see what actually works — and what will refuse you.">
 <style>
   :root{
     --brand:#2c3644;
-    --sea:#b3c4d8; --land:#a2b5cc; --land-hi:#0a0a0a;
-    --paper:#f7f7f5; --ink:#0a0a0a; --muted:#77776f;
-    --line:#dcdcd6; --rule:#1a1a1a; --warn:#a3721f; --bad:#a3341f; --good:#2f6b46;
+    --sea:#b3c4d8; --paper:#f7f7f5; --ink:#0a0a0a;
+    /* all of these clear 4.5:1 on --paper */
+    --muted:#5f5f58; --line:#d5d5cf; --rule:#1a1a1a;
+    --warn:#8a5c12; --bad:#96301c; --good:#2c6340;
     --sans:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
     --serif:"Times New Roman",Times,Georgia,serif;
@@ -19,214 +20,204 @@
   html,body{margin:0;height:100%}
   body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;
     -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-  #globe{touch-action:none}          /* let the globe own drag gestures */
-  #rows,.dbody,.modal{-webkit-overflow-scrolling:touch}
   button,input,select,textarea{font-family:inherit;color:inherit}
-  button{cursor:pointer;background:none;border:none;padding:0}
-  .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase}
-  .dim{color:var(--muted)}
+  button{cursor:pointer;background:none;border:none;padding:0;text-align:left}
   a{color:inherit}
+  :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+  .dim{color:var(--muted)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
   #app{display:flex;height:100%}
 
   /* ---------------- globe ---------------- */
-  #view{position:relative;flex:1 1 57%;min-width:0;background:var(--sea);overflow:hidden}
-  #globe{position:absolute;inset:0}
-  .stamp{position:absolute;z-index:50;pointer-events:none;font-family:var(--mono);font-size:10.5px;
-    letter-spacing:.06em;color:#1c2733}
-  #s-tl{top:18px;left:20px;max-width:280px;line-height:1.7}
-  #s-bl{bottom:18px;left:20px;font-family:var(--sans);font-size:11.5px;line-height:1.45;max-width:230px;letter-spacing:0}
+  #view{position:relative;flex:1 1 54%;min-width:0;background:var(--sea);overflow:hidden}
+  #globe{position:absolute;inset:0;touch-action:none}
+  .stamp{position:absolute;z-index:50;pointer-events:none;font-family:var(--mono);font-size:11px;
+    letter-spacing:.06em;color:#16202b}
+  #s-tl{top:18px;left:20px;line-height:1.7}
+  #s-bl{bottom:18px;left:20px;font-family:var(--sans);font-size:12px;line-height:1.45;max-width:240px;letter-spacing:0}
   #s-br{bottom:18px;right:20px;text-align:right;line-height:1.7}
-  #legend{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;
-    align-items:center;gap:7px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
-    text-transform:uppercase;color:#1c2733;pointer-events:none}
-  #legend i{width:22px;height:8px;display:block}
   #reset{position:absolute;top:14px;right:16px;z-index:60;border:1px solid var(--rule);background:var(--paper);
-    padding:6px 13px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;display:none}
+    padding:8px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;display:none}
   #reset.on{display:block}
-  /* globe.gl injects these with its own type — pull them into the type system */
-  .scene-nav-info{font-family:var(--mono)!important;font-size:9px!important;letter-spacing:.08em;
-    text-transform:uppercase;color:#1c2733!important;opacity:.5;bottom:6px!important}
+  .scene-nav-info{font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.07em;
+    text-transform:uppercase;color:#16202b!important;opacity:.6;bottom:6px!important}
   .scene-tooltip{font-family:var(--mono)!important;color:var(--ink)!important}
 
   /* ---------------- panel ---------------- */
-  #dir{position:relative;flex:0 0 500px;max-width:46%;background:var(--paper);border-left:1px solid var(--rule);
-    display:flex;flex-direction:column;min-height:0}
+  #dir{position:relative;flex:0 0 520px;max-width:48%;background:var(--paper);
+    border-left:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
 
-  .head{padding:22px 28px 20px;border-bottom:1px solid var(--rule)}
+  .head{padding:20px 28px 18px;border-bottom:1px solid var(--rule)}
   .head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-  .head h1{margin:8px 0 0;font-size:30px;line-height:1.02;letter-spacing:-.018em;font-weight:500;text-transform:uppercase}
-  .cta{background:var(--brand);color:var(--paper);padding:11px 15px;font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;line-height:1.25;transition:.15s}
-  .cta:hover{filter:brightness(1.15)}
+  .head h1{margin:8px 0 0;font-size:29px;line-height:1.02;letter-spacing:-.018em;font-weight:500;text-transform:uppercase}
+  .cta{background:var(--brand);color:#fff;padding:11px 15px;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1.25;text-align:center}
+  .cta:hover{filter:brightness(1.18)}
 
-  .gapbar{padding:12px 28px;border-bottom:1px solid var(--rule);display:flex;gap:22px}
+  .gapbar{padding:11px 28px;border-bottom:1px solid var(--rule);display:flex;gap:18px}
   .gapbar div{flex:1}
-  .gapbar b{display:block;font-size:21px;font-weight:500;letter-spacing:-.01em;line-height:1.1}
-  .gapbar span{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);line-height:1.4;display:block;margin-top:3px}
+  .gapbar b{display:block;font-size:20px;font-weight:500;letter-spacing:-.01em;line-height:1.1}
+  .gapbar span{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);line-height:1.4;display:block;margin-top:3px}
+  .gapbar .hot b{color:var(--warn)}
 
   .filters{padding:14px 28px 16px;border-bottom:1px solid var(--rule)}
-  .uline{width:100%;border:none;border-bottom:1px solid var(--line);background:none;padding:5px 0 7px;
-    font-size:14.5px;outline:none;margin-bottom:12px;border-radius:0}
-  .uline::placeholder{color:#a3a39b}
+  .uline{width:100%;border:none;border-bottom:1px solid var(--line);background:none;padding:6px 0 8px;
+    font-size:15px;outline:none;margin-bottom:12px;border-radius:0}
+  .uline::placeholder{color:#8b8b83}
   .uline:focus{border-bottom-color:var(--rule)}
+  #ftoggle{display:none;width:100%;border:1px solid var(--line);padding:12px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  #ftoggle span{float:right}
   .tags{display:flex;gap:5px;flex-wrap:wrap}
-  .tag{border:1px solid var(--rule);padding:2.5px 6px;font-family:var(--mono);font-size:9px;letter-spacing:.07em;
+  .tag{border:1px solid var(--rule);padding:3px 7px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
     text-transform:uppercase;line-height:1.3;white-space:nowrap}
-  button.tag{color:#8a8a82;border-color:var(--line);transition:.1s}
-  button.tag:hover{color:var(--ink);border-color:#a9a9a1}
-  button.tag.on{background:var(--brand);color:var(--paper);border-color:var(--brand)}
+  button.tag{color:var(--muted);border-color:var(--line)}
+  button.tag:hover{color:var(--ink);border-color:var(--muted)}
+  button.tag.on{background:var(--brand);color:#fff;border-color:var(--brand)}
   .tag.gap{border-style:dashed;color:var(--warn);border-color:var(--warn)}
-  .tag.rep{border-color:var(--good);color:var(--good)}
   .tag.ok{background:var(--good);border-color:var(--good);color:#fff}
   .tag.no{background:var(--bad);border-color:var(--bad);color:#fff}
-  .blocked-row{opacity:.55}
-  .blocked-row:hover{opacity:1}
-  .cl.no button{border-color:var(--bad);color:var(--bad)}
-  .frow{margin-top:11px}
-  .frow>.lbl{display:block;margin-bottom:6px;color:var(--muted)}
-  #ftoggle{display:none;width:100%;text-align:left;border:1px solid var(--line);padding:11px 12px;
-    font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
-  #ftoggle span{float:right;font-size:12px;line-height:1}
+  .tag.rep{border-color:var(--good);color:var(--good)}
+  .tag.stale{border-style:dashed;color:var(--warn);border-color:var(--warn)}
+  .frow{margin-top:12px}
+  .frow>.lbl{display:block;margin-bottom:7px;color:var(--muted)}
 
-  .meta-row{padding:9px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+  .meta-row{padding:9px 28px;border-bottom:1px solid var(--line);display:flex;
+    justify-content:space-between;gap:10px;align-items:center}
+  .meta-row select{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    border:none;background:none;color:var(--muted);outline:none}
 
   #rows{flex:1;overflow-y:auto;min-height:0}
-  .row{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:start;padding:14px 28px;
-    border-bottom:1px solid var(--line);cursor:pointer}
-  .row:hover{background:#efefe9}
-  .row .n{font-family:var(--mono);font-size:10px;color:var(--muted);padding-top:3px}
-  .row h3{margin:0 0 4px;font-size:14.5px;font-weight:400;text-transform:uppercase;line-height:1.22}
-  .row p{margin:0 0 6px;font-size:11.5px;line-height:1.42;color:var(--muted)}
-  .row .tags{max-width:210px}
-  .none{padding:40px 28px;font-size:12.5px;line-height:1.7;color:var(--muted)}
-
-  /* detail */
-  #detail{position:absolute;inset:0;background:var(--paper);display:none;flex-direction:column;z-index:80}
-  #detail.on{display:flex}
-  .dhead{padding:20px 28px 18px;border-bottom:1px solid var(--rule);background:var(--brand);color:#fff}
-  .dhead .lbl{color:rgba(255,255,255,.72)}
-  .dhead h2{margin:8px 0 0;font-size:27px;font-weight:500;text-transform:uppercase;letter-spacing:-.015em;line-height:1.05}
-  .dhead .sub{margin-top:7px;font-size:11.5px;color:rgba(255,255,255,.8);line-height:1.5}
-  .back{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.8)}
-  .back:hover{color:#fff}
-  .dbody{flex:1;overflow-y:auto;min-height:0}
-  .fld{padding:13px 28px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:118px 1fr;gap:14px;align-items:start}
-  .fld .k{font-family:var(--mono);font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);padding-top:2px}
-  .fld .v{font-size:13px;line-height:1.5}
-  .fld .v.miss{color:var(--warn);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
-  .cl{display:flex;flex-wrap:wrap;gap:5px}
-  .cl button{border:1px solid var(--line);padding:3px 7px;font-family:var(--mono);font-size:9px;
-    letter-spacing:.06em;text-transform:uppercase}
-  .cl button:hover{border-color:var(--brand);color:var(--brand)}
-  .verifybox{margin:16px 28px 26px;border:1px solid var(--rule);padding:16px 18px}
-  .verifybox p{margin:8px 0 0;font-size:11.5px;line-height:1.55;color:var(--muted)}
-  .verifybox .solid{margin-top:14px}
+  .row{display:block;width:100%;padding:14px 28px;border-bottom:1px solid var(--line);cursor:pointer}
+  .row:hover{background:#eeeee7}
+  .row.blocked{opacity:.6}
+  .row.blocked:hover{opacity:1}
+  .rtop{display:flex;gap:12px;align-items:baseline}
+  .row .n{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 26px}
+  .row h3{margin:0;font-size:15px;font-weight:400;text-transform:uppercase;line-height:1.22;flex:1}
+  .rbody{margin-left:38px}
+  .row p{margin:3px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .row p.fee{color:var(--ink)}
+  .row .tags{margin-top:8px}
+  .none{padding:38px 28px;font-size:13px;line-height:1.7;color:var(--muted)}
+  .note-row{padding:14px 28px;font-family:var(--mono);font-size:10px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
 
   .foot{border-top:1px solid var(--rule);padding:13px 28px;display:flex;justify-content:space-between;align-items:center;gap:14px}
-  .foot .m{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--muted);line-height:1.55;text-transform:uppercase}
-  .foot .m b{display:block;color:var(--ink);font-weight:700;letter-spacing:.11em;margin-bottom:4px}
+  .foot .m{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);line-height:1.6;text-transform:uppercase}
+  .foot .m b{display:block;color:var(--ink);font-weight:700;letter-spacing:.1em;margin-bottom:4px}
   .serif{font-family:var(--serif);font-size:20px;white-space:nowrap;border-bottom:1px solid transparent}
   .serif:hover{border-bottom-color:var(--ink)}
 
+  /* compare tray */
+  #tray{display:none;border-top:1px solid var(--rule);background:var(--brand);color:#fff;
+    padding:11px 28px;justify-content:space-between;align-items:center;gap:12px}
+  #tray.on{display:flex}
+  #tray .lbl{color:rgba(255,255,255,.85)}
+  #tray button{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff}
+  #tray .go{border:1px solid #fff;padding:8px 14px}
+
+  /* overlays */
+  .sheet{position:absolute;inset:0;background:var(--paper);display:none;flex-direction:column;z-index:80}
+  .sheet.on{display:flex}
+  .dhead{padding:20px 28px 18px;border-bottom:1px solid var(--rule);background:var(--brand);color:#fff}
+  .dhead .lbl{color:rgba(255,255,255,.78)}
+  .dhead h2{margin:8px 0 0;font-size:26px;font-weight:500;text-transform:uppercase;letter-spacing:-.015em;line-height:1.05}
+  .dhead .sub{margin-top:7px;font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.5}
+  .back{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+  .back:hover{color:#fff}
+  .dbody{flex:1;overflow-y:auto;min-height:0}
+  .fld{padding:14px 28px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:126px 1fr;gap:14px;align-items:start}
+  .fld .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+  .fld .v{font-size:13.5px;line-height:1.55}
+  .fld .v.miss{color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+  .cl{display:flex;flex-wrap:wrap;gap:5px}
+  .cl button{border:1px solid var(--line);padding:3px 7px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.05em;text-transform:uppercase}
+  .cl button:hover{border-color:var(--brand);color:var(--brand)}
+  .cl.no button{border-color:var(--bad);color:var(--bad)}
+  .note{font-size:12px;line-height:1.55;color:var(--muted);margin-top:7px}
+  .verifybox{margin:16px 28px 26px;border:1px solid var(--rule);padding:16px 18px}
+  .verifybox p{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+  .verifybox .solid{margin-top:14px}
+
+  /* compare table */
+  .ctable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .ctable th,.ctable td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}
+  .ctable th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);width:110px}
+  .ctable td{width:auto}
+  .ctable .nm{font-size:14px;text-transform:uppercase}
+
   /* modal */
-  .ov{position:fixed;inset:0;background:rgba(28,39,51,.45);display:none;align-items:center;justify-content:center;z-index:9000;padding:22px}
+  .ov{position:fixed;inset:0;background:rgba(22,32,43,.5);display:none;align-items:center;justify-content:center;z-index:9000;padding:22px}
   .ov.show{display:flex}
   .modal{background:var(--paper);border:1px solid var(--rule);width:100%;max-width:520px;max-height:88vh;overflow-y:auto}
   .mh{padding:20px 28px 16px;border-bottom:1px solid var(--rule)}
   .mh h2{margin:8px 0 0;font-size:24px;font-weight:500;text-transform:uppercase;letter-spacing:-.012em;line-height:1.06}
   .mb{padding:18px 28px 22px}
-  .mb label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin:15px 0 6px}
+  .mb label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;margin:15px 0 6px}
   .mb label:first-child{margin-top:0}
   .mb select,.mb textarea{width:100%;border:none;border-bottom:1px solid var(--line);background:none;
-    padding:5px 0 7px;font-size:14.5px;outline:none;border-radius:0;resize:vertical}
-  .mb textarea{border:1px solid var(--line);padding:9px 11px;font-size:13px;min-height:70px}
+    padding:6px 0 8px;font-size:15px;outline:none;border-radius:0}
+  .mb textarea{border:1px solid var(--line);padding:10px 11px;font-size:13.5px;min-height:72px;resize:vertical}
   .two{display:flex;gap:18px}.two>div{flex:1}
-  .note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px}
-  .err{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--bad);margin-top:12px;display:none}
+  .err{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--bad);margin-top:12px;display:none}
   .acts{display:flex;gap:22px;justify-content:flex-end;align-items:center;margin-top:22px}
-  .ghost{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .ghost{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .ghost:hover{color:var(--ink)}
-  .solid{background:var(--brand);color:var(--paper);padding:11px 22px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
-  .solid:hover{filter:brightness(1.15)}
+  .solid{background:var(--brand);color:#fff;padding:12px 22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase}
+  .solid:hover{filter:brightness(1.18)}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);
-    color:var(--paper);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-    padding:12px 20px;z-index:9500;opacity:0;transition:.28s}
+    color:var(--paper);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+    padding:13px 20px;z-index:9500;opacity:0;transition:.28s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ---------- tablet ---------- */
+  /* ---------------- tablet ---------------- */
   @media(max-width:940px){
     #app{flex-direction:column}
     #view{flex:0 0 38vh;min-height:230px}
     #dir{flex:1 1 auto;max-width:none;border-left:none;border-top:1px solid var(--rule)}
     #s-bl{display:none}
     .head h1{font-size:24px}
-    .head,.filters,.meta-row,.foot,.row,.gapbar,.note-row,.none,.fld,.mh,.mb{padding-left:20px;padding-right:20px}
+    .head,.filters,.meta-row,.foot,.row,.gapbar,.note-row,.none,.fld,.mh,.mb,#tray{padding-left:20px;padding-right:20px}
     .verifybox{margin-left:20px;margin-right:20px}
-    .row{grid-template-columns:24px 1fr}
-    .row .tags{grid-column:2;justify-content:flex-start;max-width:none;margin-top:7px}
   }
-
-  /* ---------- phone ---------- */
+  /* ---------------- phone ---------------- */
   @media(max-width:600px){
-    /* the header block must not eat the screen before the first result */
     #view{flex:0 0 26vh;min-height:168px}
-    #legend{display:none}
+    #reset{top:12px;right:12px}
     #ftoggle{display:block;margin-top:2px}
     #advf{display:none;margin-top:14px}
     #dir.filters-open #advf{display:block}
-    .head h1{font-size:25px}
-    .cta{padding:12px 16px}
-    #s-tl{font-size:9.5px;top:14px;left:16px}
-    #s-br{font-size:9.5px;bottom:14px;right:16px}
-    #reset{top:12px;right:12px;padding:8px 12px}
-
-    /* title and CTA stack; CTA goes full width and finger-sized */
     .head{padding:16px 16px 14px}
     .head-top{flex-direction:column;align-items:stretch;gap:12px}
-    .head h1{margin-top:5px}
-    .cta{width:100%;text-align:center;font-size:10px}
-
-    .gapbar{padding:10px 16px;gap:8px}
+    .head h1{font-size:25px;margin-top:5px}
+    .cta{width:100%}
+    .gapbar{padding:10px 16px;gap:9px}
     .gapbar b{font-size:16px}
-    .gapbar span{font-size:7px;letter-spacing:.05em}
-
+    .gapbar span{font-size:8.5px;letter-spacing:.04em}
     .filters{padding:14px 16px 16px}
-    /* 16px stops iOS zooming the page when a field is focused */
     .uline,.mb select,.mb textarea{font-size:16px}
-    .tag{padding:5px 9px;font-size:9.5px}
-    .row .tags .tag{padding:3px 7px}
-
-    .meta-row{padding:9px 16px;flex-direction:column;gap:3px}
-    .row{padding:14px 16px;gap:10px}
-    .row h3{font-size:15.5px}
-    .row p{font-size:12px}
-    .none,.note-row{padding:28px 16px}
-
-    /* detail: label above value instead of a cramped two-column grid */
-    .dhead{padding:18px 16px 16px}
-    .dhead h2{font-size:23px}
+    .meta-row{padding:9px 16px}
+    .row{padding:14px 16px}
+    .rbody{margin-left:0;margin-top:4px}
+    .none,.note-row{padding:26px 16px}
+    .dhead{padding:18px 16px 16px}.dhead h2{font-size:23px}
     .fld{grid-template-columns:1fr;gap:6px;padding:13px 16px}
     .fld .k{padding-top:0}
     .verifybox{margin:14px 16px 22px;padding:14px 16px}
-
-    .foot{padding:12px 16px;gap:10px}
-    .foot .m{font-size:8px}
-    .serif{font-size:18px}
-
-    /* modal becomes a sheet instead of a floating box */
+    .foot{padding:12px 16px}.serif{font-size:18px}
+    .ctable th{width:96px}
     .ov{padding:0;align-items:flex-end}
     .modal{max-width:none;max-height:94vh;border-left:none;border-right:none;border-bottom:none}
-    .mh{padding:18px 16px 14px}
-    .mb{padding:16px 16px 22px}
+    .mh{padding:18px 16px 14px}.mb{padding:16px 16px 22px}
     .two{flex-direction:column;gap:0}
-    .acts{margin-top:20px;gap:16px}
     .solid{padding:14px 20px}
   }
-
-  @media(max-width:600px) and (orientation:landscape){
-    #view{flex:0 0 46vh;min-height:0}
-  }
+  @media(max-width:600px) and (orientation:landscape){ #view{flex:0 0 46vh;min-height:0} }
 </style>
 </head>
 <body>
@@ -234,10 +225,9 @@
 
   <section id="view">
     <div id="globe"></div>
-    <div class="stamp" id="s-tl">NEOBANK_ATLAS_V0.1<br><span id="s-scope">GLOBAL VIEW</span></div>
+    <div class="stamp" id="s-tl">NEOBANK_ATLAS_V1.0<br><span id="s-scope">GLOBAL VIEW</span></div>
     <div class="stamp" id="s-bl">Every provider claims to be global. Almost none tell you where they actually work.</div>
     <div class="stamp" id="s-br"><span id="s-count">····</span></div>
-    <div id="legend"><span>0</span><i id="lg"></i><span id="lgmax">max</span><span style="margin-left:6px">providers</span></div>
     <button id="reset">← Global view</button>
   </section>
 
@@ -256,12 +246,13 @@
       <div><b id="g1">—</b><span>have any country data</span></div>
       <div><b id="g2">—</b><span>list on/off-ramps</span></div>
       <div><b id="g3">—</b><span>publish real FX fees</span></div>
-      <div><b id="g4">—</b><span>checked by hand so far</span></div>
+      <div class="hot"><b id="g4">—</b><span>verified by hand</span></div>
     </div>
 
     <div class="filters">
+      <label class="sr" for="q">Search providers</label>
       <input class="uline" id="q" placeholder="Search provider…" autocomplete="off">
-      <button id="ftoggle" aria-expanded="false">Filters &amp; country <span>+</span></button>
+      <button id="ftoggle" aria-expanded="false" aria-controls="advf">Filters &amp; country <span>+</span></button>
       <div id="advf">
         <div class="tags" id="cats"></div>
         <div class="frow">
@@ -269,7 +260,7 @@
           <div class="tags" id="svcs"></div>
         </div>
         <div class="frow">
-          <span class="lbl">Or pick a country</span>
+          <label class="lbl" for="pick">Or pick a country</label>
           <select class="uline" id="pick" style="margin-bottom:0">
             <option value="">Every country…</option>
           </select>
@@ -279,21 +270,37 @@
 
     <div class="meta-row">
       <span class="lbl dim" id="count">Loading…</span>
-      <span class="lbl dim" id="src">Source: neobankbeat · MIT</span>
+      <div>
+        <label class="sr" for="sort">Sort</label>
+        <select id="sort">
+          <option value="relevance">Sort · relevance</option>
+          <option value="name">Sort · name</option>
+          <option value="verified">Sort · verified first</option>
+          <option value="reach">Sort · widest reach</option>
+        </select>
+      </div>
     </div>
 
-    <div id="rows"></div>
+    <div id="rows" role="list"></div>
+
+    <div id="tray">
+      <span class="lbl" id="tray-n">0 selected</span>
+      <div>
+        <button id="tray-clear" style="margin-right:16px">Clear</button>
+        <button class="go" id="tray-go">Compare</button>
+      </div>
+    </div>
 
     <div class="foot">
       <div class="m">
         <b>Data_Gaps</b>
-        Base data: neobankbeat (MIT)<br>Country layer: community verified
+        Base: neobankbeat (MIT)<br>Country layer: verified here
       </div>
       <button class="serif" id="open-foot">Add a report</button>
     </div>
 
-    <!-- detail overlay -->
-    <div id="detail">
+    <!-- detail -->
+    <div id="detail" class="sheet">
       <div class="dhead">
         <button class="back" id="back">← All providers</button>
         <span class="lbl" style="display:block;margin-top:12px" id="d-cat"></span>
@@ -302,10 +309,40 @@
       </div>
       <div class="dbody" id="d-body"></div>
     </div>
+
+    <!-- compare -->
+    <div id="compare" class="sheet">
+      <div class="dhead">
+        <button class="back" id="cback">← Back</button>
+        <span class="lbl" style="display:block;margin-top:12px">Side_By_Side</span>
+        <h2 id="c-title">Compare</h2>
+        <div class="sub" id="c-sub"></div>
+      </div>
+      <div class="dbody" id="c-body"></div>
+    </div>
   </aside>
 </div>
 
-<!-- report modal -->
+<!-- country-first onboarding -->
+<div class="ov" id="onb">
+  <div class="modal">
+    <div class="mh">
+      <span class="lbl">Start_Here</span>
+      <h2>Where are<br>you?</h2>
+    </div>
+    <div class="mb">
+      <p class="note" style="margin-top:0">Almost every provider here says “global”. Very few mean it. Pick your country and the list will show what is verified, what is only claimed, and what will refuse you outright.</p>
+      <label for="onb-c">Country</label>
+      <select class="uline" id="onb-c"></select>
+      <div class="acts">
+        <button class="ghost" id="onb-skip">Browse the world instead</button>
+        <button class="solid" id="onb-go">Show me what works</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- report -->
 <div class="ov" id="ov">
   <div class="modal">
     <div class="mh">
@@ -323,7 +360,6 @@
           <select class="uline" id="f-ctry"></select>
         </div>
       </div>
-
       <label for="f-out">Outcome *</label>
       <select class="uline" id="f-out">
         <option value="signup_ok">Signed up fine</option>
@@ -335,12 +371,10 @@
         <option value="fee_diff">Fees differ from advertised</option>
         <option value="blocked">Blocked / not available at all</option>
       </select>
-
       <label for="f-note">Details (optional)</label>
-      <textarea id="f-note" placeholder="e.g. PK passport accepted, but bank transfer off-ramp only via a third party. Real FX was ~1.4%, not 0%."></textarea>
-
+      <textarea id="f-note" placeholder="e.g. PK passport accepted, but off-ramp only via a third party. Real FX was ~1.4%, not 0%."></textarea>
       <div class="err" id="err"></div>
-      <p class="note">Prototype: reports are stored in this browser only. Backend wiring is described in <code>ROADMAP.md</code>.</p>
+      <p class="note">Prototype: reports are stored in this browser only. Backend in <code>ROADMAP.md</code>.</p>
       <div class="acts">
         <button class="ghost" id="cancel">Cancel</button>
         <button class="solid" id="submit">Submit report</button>
@@ -349,96 +383,62 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+<script src="verified.js"></script>
 <script>
 /* ==================== constants ==================== */
 const EU = ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland",
   "France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta",
   "Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"];
 
-/* dataset name  ->  world-atlas name */
+/* dataset / research name  ->  world-atlas name */
 const ALIAS = {
   "United States":"United States of America", "UAE":"United Arab Emirates",
   "Türkiye":"Turkey", "Czech Republic":"Czechia", "DR Congo":"Dem. Rep. Congo",
   "Dominican Republic":"Dominican Rep.", "Bosnia":"Bosnia and Herz.",
-  "South Korea":"South Korea", "Hong Kong":"Hong Kong", "Gibraltar":"Gibraltar"
+  "South Sudan":"S. Sudan", "Central African Republic":"Central African Rep."
 };
+const norm = n => ALIAS[n] || n;
+
 const BRAND = {
-  "Revolut":"#191c1f","Cash App":"#00d54b","Venmo":"#008cff","Robinhood":"#04b23c","Crypto.com":"#103f68",
-  "Coinbase Card":"#0052ff","Binance Card":"#f0b90b","Bybit Card":"#f7a600","OKX Card":"#1c1c1e",
-  "Bitget Card":"#00f0ff","KuCard":"#26a17b","Bitpanda":"#4b5cc4","eToro Money":"#3fb54a",
-  "Nexo":"#1a4bff","Wirex":"#e6007a","Uphold":"#49cc68","Krak":"#7132f5","KAST":"#1f1f1f",
-  "RedotPay":"#e8452c","Xapo Bank":"#0e3b2e","Strike":"#f7931a","Fold":"#f7931a","Lava":"#ff4d1c",
-  "COCA":"#0b0b0b","Brighty":"#ffb01f","Plasma One":"#00d18f","EtherFi Cash":"#4a3aff","Karta":"#111111",
-  "Hyperbeat":"#00e0b8","MetaMask":"#f6851b","Phantom":"#ab9ff2","Solflare":"#fc7227","Rainbow":"#001e59",
+  "Revolut":"#191c1f","Cash App":"#00a63f","Venmo":"#0074d4","Robinhood":"#04893c","Crypto.com":"#103f68",
+  "Coinbase Card":"#0052ff","Binance Card":"#c99400","Bybit Card":"#b57700","OKX Card":"#1c1c1e",
+  "Bitget Card":"#00808c","KuCard":"#1d7a5e","Bitpanda":"#4b5cc4","eToro Money":"#2f7f38",
+  "Nexo":"#1a4bff","Wirex":"#b0005f","Uphold":"#2f8c48","Krak":"#5a24c4","KAST":"#1f1f1f",
+  "RedotPay":"#c0341f","Xapo Bank":"#0e3b2e","Strike":"#b56a12","Fold":"#b56a12","Lava":"#c43a14",
+  "COCA":"#0b0b0b","Brighty":"#8a5c12","Plasma One":"#00795a","EtherFi Cash":"#4a3aff","Karta":"#111111",
+  "Hyperbeat":"#007a68","MetaMask":"#c26214","Phantom":"#5a4fd0","Solflare":"#c4551b","Rainbow":"#001e59",
   "Trust Wallet":"#0500ff","Exodus":"#1d1f2b","Zengo":"#0a2540","Gnosis Pay":"#133629","Tangem":"#0b0b0b",
-  "Mercado Pago":"#00b1ea","Lemon":"#00e05c","Bitso":"#2d5be3","DolarApp":"#0f172a","Airtm":"#1e63e9",
-  "Chipper Cash":"#1a1a1a","Yellow Card":"#f5c518","Deel":"#1b1b1b","Flex":"#111111","MiniPay":"#35d07f",
+  "Mercado Pago":"#0071a8","Lemon":"#00873a","Bitso":"#2d5be3","DolarApp":"#0f172a","Airtm":"#1e63e9",
+  "Chipper Cash":"#1a1a1a","Yellow Card":"#8a6b00","Deel":"#1b1b1b","Flex":"#111111","MiniPay":"#1f7a4a",
   "Sling Money":"#111111","Deblock":"#1c1c1c","Fiat24":"#0a2b4e","Stables":"#111111","Ready":"#111111",
   "Payy":"#111111","Daimo":"#1f6feb","Veera":"#0f172a","Kontigo":"#0b6bcb","Oobit":"#111111",
-  "Moto":"#111111","Bleap":"#111111","Bitnob":"#f7931a","Onboard":"#111111","Startale":"#0b0b0b"
+  "Bleap":"#5a24c4","Bitget Wallet":"#00707c","Moto":"#111111","Bitnob":"#b56a12","Onboard":"#111111"
 };
-const hashColor = s => {
-  let h = 0; for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) | 0;
-  const hue = Math.abs(h) % 360;
-  return `hsl(${hue} 42% 32%)`;
-};
-const brandOf = p => BRAND[p.name] || hashColor(p.name || "x");
-
-/* ============================================================
-   VERIFIED LAYER — checked by hand against the issuer's own docs.
-   The base dataset models availability as an inclusion list, but these
-   providers work the opposite way: open almost everywhere, with an
-   explicit blocklist. That mismatch is why "Global" is so misleading —
-   KAST is in 170+ countries AND bans Pakistan outright.
-   Every row is dated. Re-check before trusting any of it.
-   ============================================================ */
-const VERIFIED = {
-  "RedotPay": {
-    breadth: "130+ countries", checked: "2026-07-29", confidence: "secondary",
-    source: "https://redotpayhelp.com/supported-countries",
-    excludes: ["United States of America","China","Russia","Ukraine","Venezuela","Iran","Iraq",
-      "Syria","North Korea","Afghanistan","Albania","Algeria","Bangladesh","Belarus"]
-  },
-  "KAST": {
-    breadth: "170+ countries", checked: "2026-07-29", confidence: "issuer",
-    source: "https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
-    excludes: ["Afghanistan","Albania","Armenia","Belarus","Bulgaria","Burkina Faso","Burundi",
-      "Cambodia","Cameroon","Central African Rep.","China","Cuba","Eritrea","Guinea-Bissau","Haiti",
-      "Indonesia","Iran","Iraq","Jamaica","Jordan","Kenya","North Korea","Lebanon","Liberia","Libya",
-      "Mali","Morocco","Mozambique","Myanmar","Namibia","Nicaragua","Pakistan","Palau","Philippines",
-      "Russia","Rwanda","Senegal","Sierra Leone","Somalia","South Africa","S. Sudan","Sudan","Syria",
-      "Tanzania","Uganda","Ukraine","Venezuela","Yemen","Zimbabwe"]
-  },
-  "Plasma One": {
-    breadth: "150+ countries · invite only", checked: "2026-07-29", confidence: "secondary",
-    source: "https://www.plasma.org/personal",
-    excludes: ["United States of America","Cuba","Iran","North Korea","Syria"]
-  },
-  "EtherFi Cash": {
-    breadth: "Most of Europe, LatAm, APAC, UAE", checked: "2026-07-29", confidence: "issuer",
-    source: "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
-    note: "Live in the US, but not in 20 states.",
-    excludes: ["Belarus","Bangladesh","China","Cuba","Estonia","Finland","Hungary","India","Iraq",
-      "Israel","Nepal","Netherlands","North Korea","Philippines","Russia","Syria","Turkey","Ukraine",
-      "Venezuela","Vietnam"]
-  }
-};
-Object.values(VERIFIED).forEach(v => v.set = new Set(v.excludes.map(c => (typeof ALIAS!=="undefined" && ALIAS[c]) || c)));
+const hashColor = s => { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0;
+  return "hsl("+(Math.abs(h)%360)+" 44% 27%)"; };
+const brandOf = p => BRAND[p.name] || hashColor(p.name||"x");
 
 const SERVICES = ["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"];
-const OUTCOME_LABEL = {
-  signup_ok:"Signup OK", kyc_reject:"KYC rejected", card_ok:"Card works",
+const OUTCOME_LABEL = { signup_ok:"Signup OK", kyc_reject:"KYC rejected", card_ok:"Card works",
   onramp_ok:"On-ramp OK", offramp_ok:"Off-ramp OK", offramp_no:"No off-ramp",
-  fee_diff:"Fees differ", blocked:"Blocked"
-};
+  fee_diff:"Fees differ", blocked:"Blocked" };
+const STALE_DAYS = 180;
 
-/* small offline fallback so the page is never blank */
-const FALLBACK = {meta:{total:0}, entities:[
- {name:"Revolut",category:"hybrid",hq:"London, UK",domain:"revolut.com",website:"https://revolut.com",card_network:"Visa/MC",card_type:"Debit + credit",custody:"Custodial",countries:["United Kingdom","Ireland","France","Germany","Spain","Italy","Poland","Romania","Lithuania","Netherlands","Portugal","United States","Australia","Singapore","Japan","Brazil","New Zealand","Switzerland","Mexico","India"],services:["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"],fx_markup:{markup:"Interbank; free to £/$1,000/mo weekdays, 0.5% over; +1% weekend",as_of:"2026-07"}},
+/* normalise the verified layer's country names once */
+const VERIFIED = {};
+if(typeof VERIFIED_RAW !== "undefined"){
+  Object.entries(VERIFIED_RAW).forEach(([k,v])=>{
+    VERIFIED[k] = Object.assign({}, v, {set:new Set((v.list||[]).map(norm))});
+  });
+}
+const ageDays = d => Math.floor((Date.now()-new Date(d).getTime())/864e5);
+
+const FALLBACK = {entities:[
+ {name:"Revolut",category:"hybrid",hq:"London, UK",domain:"revolut.com",website:"https://revolut.com",card_network:"Visa/MC",card_type:"Debit + credit",custody:"Custodial",countries:["United Kingdom","Ireland","France","Germany","Spain","Italy","Poland","United States","Australia","Singapore","Japan","Brazil","Mexico","India"],services:["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"],fx_markup:{markup:"Interbank; free to £/$1,000/mo weekdays, 0.5% over; +1% weekend",as_of:"2026-07"}},
  {name:"RedotPay",category:"hybrid",hq:"Hong Kong, HK",domain:"redotpay.com",website:"https://redotpay.com",card_network:"Visa/MC",card_type:"Prepaid",custody:"Custodial",countries:["Hong Kong","Singapore","Brazil","Argentina","Nigeria","Global"]},
  {name:"KAST",category:"hybrid",hq:"Hong Kong, HK",domain:"kast.xyz",website:"https://kast.xyz",card_network:"Visa",card_type:"Prepaid (tiers)",custody:"Custodial",countries:["Hong Kong","Singapore","Global"]},
  {name:"Plasma One",category:"web3-native",hq:"—",domain:"plasma.to",website:"https://plasma.to",card_network:"Visa",card_type:"Virtual + physical",custody:"Self-custodial",countries:["Global"]},
@@ -446,52 +446,85 @@ const FALLBACK = {meta:{total:0}, entities:[
 ]};
 
 /* ==================== state ==================== */
-let ALL = [], VIEW = [], country = null, selected = null, globe = null, feats = [];
-let activeCats = new Set(), activeSvcs = new Set(), maxCount = 1;
-const norm = n => (ALIAS[n] || n);
+let ALL=[], VIEW=[], country=null, selected=null, globe=null, feats=[], hoverName=null;
+let activeCats=new Set(), activeSvcs=new Set(), verifiedOnly=false, queueOnly=false;
+let sortMode="relevance", cmp=new Set(), maxCount=1;
+
 const store = {
-  read(){ try{ return JSON.parse(localStorage.getItem("atlas_reports")||"[]"); }catch(e){ return []; } },
+  read(){ try{ const v=JSON.parse(localStorage.getItem("atlas_reports")||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } },
   write(v){ try{ localStorage.setItem("atlas_reports", JSON.stringify(v)); }catch(e){} }
 };
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* countries a provider covers, expanded */
 function coverage(p){
-  const out = new Set(); let global = false;
+  const out=new Set(); let global=false;
   (p.countries||[]).forEach(c=>{
-    if(c==="Global"){ global = true; return; }
-    if(c==="European Union" || c==="EEA"){ EU.forEach(x=>out.add(norm(x))); return; }
+    if(c==="Global"){ global=true; return; }
+    if(c==="European Union"||c==="EEA"){ EU.forEach(x=>out.add(norm(x))); return; }
     out.add(norm(c));
   });
   return {set:out, global};
 }
-/* How does this provider stand in this country?
-   verified > blocked > listed > claim  */
-function statusIn(p, ctry){
-  const v = VERIFIED[p.name];
-  if(!ctry) return v ? "verified" : (p._cov.set.size ? "listed" : (p._cov.global ? "claim" : null));
-  if(v) return v.set.has(ctry) ? "blocked" : "verified";
-  if(p._cov.set.has(ctry)) return "listed";
-  if(p._cov.global) return "claim";
-  return null;
-}
-const STATUS_TAG = {
-  verified:['<span class="tag ok">Verified</span>'],
-  blocked :['<span class="tag no">Blocked here</span>'],
-  listed  :[''],
-  claim   :['<span class="tag">Global claim</span>']
-};
-
 function reportsFor(name, ctry){
   return store.read().filter(r=>r.provider===name && (!ctry || r.country===ctry));
 }
 function gapsOf(p){
-  const g = [];
+  const g=[];
   if(!(p.countries||[]).length) g.push("Countries");
   if(!(p.services||[]).length) g.push("Ramps");
   if(!p.fx_markup) g.push("Fees");
   return g;
 }
+/* status of a provider in a country */
+function statusIn(p, ctry){
+  const v = VERIFIED[p.name];
+  if(!ctry) return v ? "verified" : (p._cov.set.size ? "listed" : (p._cov.global ? "claim" : null));
+  if(v) return v.mode==="block" ? (v.set.has(ctry) ? "blocked" : "verified")
+                                : (v.set.has(ctry) ? "verified" : "blocked");
+  if(p._cov.set.has(ctry)) return "listed";
+  if(p._cov.global) return "claim";
+  return null;
+}
+const STATUS_TAG = {
+  verified:'<span class="tag ok">Verified</span>',
+  blocked :'<span class="tag no">Not available here</span>',
+  listed  :'<span class="tag">Listed</span>',
+  claim   :'<span class="tag">Global claim · unchecked</span>'
+};
+function feeOf(p){
+  const v = VERIFIED[p.name];
+  if(v && v.fee) return v.fee;
+  if(p.fx_markup) return p.fx_markup.markup;
+  return null;
+}
+
+/* ==================== URL state ==================== */
+function writeURL(push){
+  const q = new URLSearchParams();
+  if(country) q.set("c", country);
+  if(selected) q.set("p", selected.name);
+  const url = location.pathname + (q.toString() ? "?"+q : "");
+  if(url === location.pathname+location.search) return;
+  push ? history.pushState({}, "", url) : history.replaceState({}, "", url);
+}
+function readURL(){
+  const q = new URLSearchParams(location.search);
+  const c = q.get("c"), p = q.get("p");
+  if(c) selectCountry(c, true, true);
+  if(p){ const prov = ALL.find(x=>x.name===p); if(prov) openDetail(prov, true); }
+  return !!(c||p);
+}
+window.addEventListener("popstate", () => {
+  const q = new URLSearchParams(location.search);
+  const c = q.get("c") || null, p = q.get("p");
+  country = c;
+  document.getElementById("reset").classList.toggle("on", !!country);
+  document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
+  const pk = document.getElementById("pick"); if(pk) pk.value = country || "";
+  if(p){ const prov = ALL.find(x=>x.name===p); if(prov){ openDetail(prov, true); return; } }
+  closeSheets(true);
+  paint(); renderList();
+});
 
 /* ==================== globe ==================== */
 function initGlobe(){
@@ -504,117 +537,115 @@ function initGlobe(){
     .polygonSideColor(()=> "rgba(110,132,160,.28)")
     .polygonStrokeColor(()=> "#6b7f96")
     .polygonLabel(d => {
-      const n = d.properties.name, c = countryCount(n);
-      return `<div style="font-family:${getComputedStyle(document.documentElement).getPropertyValue('--mono')};
-        background:#f7f7f5;border:1px solid #1a1a1a;padding:6px 9px;font-size:10px;letter-spacing:.06em;
-        text-transform:uppercase;color:#0a0a0a">${esc(n)} — ${c} provider${c===1?"":"s"}</div>`;
+      const n=d.properties.name, c=countryCount(n);
+      return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
+        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#0a0a0a">'+
+        esc(n)+' — '+c+' provider'+(c===1?'':'s')+'</div>';
     })
-    /* globe.gl's own click detection is unreliable over the WebGL canvas
-       (any sub-pixel movement between press and release is read as a drag),
-       so selection is driven off the hover raycast, which is dependable. */
+    /* globe.gl's own click detection is unreliable over the canvas, so
+       selection runs off the hover raycast with a drag guard. */
     .onPolygonHover(d => { hoverName = d ? d.properties.name : null;
       document.getElementById("globe").style.cursor = d ? "pointer" : "grab"; });
 
-  let downAt = null;
-  const gel = document.getElementById("globe");
-  gel.addEventListener("mousedown", e => { downAt = [e.clientX, e.clientY]; });
+  let downAt=null;
+  const gel=document.getElementById("globe");
+  gel.addEventListener("mousedown", e => { downAt=[e.clientX,e.clientY]; });
   gel.addEventListener("click", e => {
     if(!hoverName) return;
     const moved = downAt ? Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]) : 0;
-    downAt = null;
-    if(moved < 6) selectCountry(hoverName);   // a click, not a drag
+    downAt=null;
+    if(moved<6) selectCountry(hoverName);
   });
-  try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
-  /* auto-rotate is off: a spinning globe turns every click into a drag,
-     and this globe exists to be clicked. */
-  const c = globe.controls(); c.autoRotate = false; c.enableDamping = true;
-  globe.pointOfView({lat:22, lng:30, altitude:2.4});
 
-  const fit = () => { const el = document.getElementById("view");
-    globe.width(el.clientWidth).height(el.clientHeight); };
+  try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
+  const c=globe.controls(); c.autoRotate=false; c.enableDamping=true;
+  globe.pointOfView({lat:22,lng:30,altitude:2.4});
+  const fit=()=>{ const el=document.getElementById("view"); globe.width(el.clientWidth).height(el.clientHeight); };
   fit(); window.addEventListener("resize", fit);
 
   fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(topo=>{
     feats = topojson.feature(topo, topo.objects.countries).features;
     globe.polygonsData(feats);
-    if(ALL.length) fillSelects();   // geometry can land after the data does
+    if(ALL.length) fillSelects();
     paint();
   }).catch(()=>{});
 }
-let hoverName = null;
-
 function countryCount(atlasName){
-  return VIEW.filter(p => p._cov.set.has(atlasName)).length;
+  return VIEW.filter(p => { const s=statusIn(p,atlasName); return s==="verified"||s==="listed"; }).length;
 }
 function paint(){
   if(!globe || !feats.length) return;
-  const counts = feats.map(f => countryCount(f.properties.name));
-  maxCount = Math.max(1, ...counts);
+  maxCount = Math.max(1, ...feats.map(f=>countryCount(f.properties.name)));
   const brand = getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "#2c3644";
   globe.polygonCapColor(f => {
-    const n = f.properties.name, c = countryCount(n);
-    if(country && n === country) return brand;
+    const n=f.properties.name, c=countryCount(n);
+    if(country && n===country) return brand;
     if(!c) return "#c3cfdd";
-    const t = .18 + .72 * (c / maxCount);
-    return mix("#dfe6ef", brand, t);
+    return mix("#dfe6ef", brand, .18 + .72*(c/maxCount));
   });
-  document.getElementById("lg").style.background =
-    `linear-gradient(90deg, #dfe6ef, ${brand})`;
-  document.getElementById("lgmax").textContent = maxCount;
 }
 function mix(a,b,t){
-  const p = h => h.trim().startsWith("hsl") ? null : [1,3,5].map(i=>parseInt(h.trim().slice(i,i+2),16));
-  const A = p(a), B = p(b);
-  if(!A || !B) return t > .5 ? b : a;
-  return "rgb(" + A.map((v,i)=>Math.round(v + (B[i]-v)*t)).join(",") + ")";
+  const p=h=>h.trim().startsWith("hsl")?null:[1,3,5].map(i=>parseInt(h.trim().slice(i,i+2),16));
+  const A=p(a),B=p(b); if(!A||!B) return t>.5?b:a;
+  return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";
 }
 
 /* ==================== filtering ==================== */
 function applyFilters(){
-  const q = document.getElementById("q").value.trim().toLowerCase();
+  const q=document.getElementById("q").value.trim().toLowerCase();
   VIEW = ALL.filter(p=>{
     if(activeCats.size && !activeCats.has(p.category)) return false;
     if(activeSvcs.size && ![...activeSvcs].every(s=>(p.services||[]).includes(s))) return false;
+    if(verifiedOnly && !VERIFIED[p.name]) return false;
+    if(queueOnly && VERIFIED[p.name]) return false;
     if(q){
-      const s = (p.name+" "+(p.hq||"")+" "+(p.card_network||"")+" "+(p.note||"")).toLowerCase();
+      const s=(p.name+" "+(p.hq||"")+" "+(p.card_network||"")+" "+(p.note||"")).toLowerCase();
       if(!q.split(/\s+/).every(t=>s.includes(t))) return false;
     }
     return true;
   });
-  paint();
-  renderList();
-}
-function listForCountry(){
-  if(!country) return VIEW;
-  const rank = {verified:0, listed:1, claim:2, blocked:3};
-  return VIEW.map(p => [p, statusIn(p, country)])
-             .filter(([,s]) => s)
-             .sort((a,b) => rank[a[1]] - rank[b[1]])
-             .map(([p]) => p);
-}
-
-function selectCountry(name, keepToggle){
-  country = (!keepToggle && country === name) ? null : (name || null);
-  document.getElementById("reset").classList.toggle("on", !!country);
-  document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
-  const pk = document.getElementById("pick");
-  if(pk && pk.value !== (country||"")) pk.value = country || "";
-  if(country && globe){
-    const f = feats.find(x=>x.properties.name===country);
-    if(f){
-      const cc = centroid(f);
-      globe.pointOfView({lat:cc[1], lng:cc[0], altitude:1.7}, 900);
-    }
-  } else if(globe){ globe.pointOfView({lat:22, lng:30, altitude:2.4}, 900); }
   paint(); renderList();
 }
+function listForCountry(){
+  let res;
+  if(!country) res = VIEW.slice();
+  else {
+    const rank={verified:0, listed:1, claim:2, blocked:3};
+    res = VIEW.map(p=>[p,statusIn(p,country)]).filter(([,s])=>s)
+              .sort((a,b)=>rank[a[1]]-rank[b[1]]).map(([p])=>p);
+  }
+  if(sortMode==="name") res.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sortMode==="verified") res.sort((a,b)=>(!!VERIFIED[b.name])-(!!VERIFIED[a.name]));
+  else if(sortMode==="reach") res.sort((a,b)=>reachOf(b)-reachOf(a));
+  return res;
+}
+function reachOf(p){
+  const v=VERIFIED[p.name];
+  if(v) return v.mode==="block" ? 200-v.set.size : v.set.size;
+  return p._cov.set.size + (p._cov.global?1:0);
+}
+
+function selectCountry(name, keepToggle, silent){
+  country = (!keepToggle && country===name) ? null : (name||null);
+  document.getElementById("reset").classList.toggle("on", !!country);
+  document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
+  const pk=document.getElementById("pick"); if(pk && pk.value!==(country||"")) pk.value = country||"";
+  if(globe){
+    if(country){
+      const f=feats.find(x=>x.properties.name===country);
+      if(f){ const cc=centroid(f); globe.pointOfView({lat:cc[1],lng:cc[0],altitude:1.7},900); }
+    } else globe.pointOfView({lat:22,lng:30,altitude:2.4},900);
+  }
+  paint(); renderList();
+  if(!silent) writeURL(true);
+}
 function centroid(f){
-  let xs=[], ys=[];
-  const walk = a => { if(typeof a[0]==="number"){ xs.push(a[0]); ys.push(a[1]); } else a.forEach(walk); };
+  let xs=[],ys=[];
+  const walk=a=>{ if(typeof a[0]==="number"){xs.push(a[0]);ys.push(a[1]);} else a.forEach(walk); };
   walk(f.geometry.coordinates);
   return [xs.reduce((s,v)=>s+v,0)/xs.length, ys.reduce((s,v)=>s+v,0)/ys.length];
 }
-document.getElementById("reset").onclick = () => selectCountry(country);
+document.getElementById("reset").onclick = () => selectCountry(null, true);
 
 /* ==================== list ==================== */
 function renderList(){
@@ -622,241 +653,324 @@ function renderList(){
   const noGeom = country && feats.length && !feats.some(f=>f.properties.name===country);
   document.getElementById("count").textContent =
     res.length + " provider" + (res.length===1?"":"s") +
-    (country ? " · " + country + (noGeom ? " (too small to plot)" : "") : " worldwide");
-  document.getElementById("s-count").textContent =
-    String(res.length).padStart(3,"0") + " PROVIDERS";
+    (country ? " · "+country+(noGeom?" (too small to plot)":"") : " worldwide");
+  document.getElementById("s-count").textContent = String(res.length).padStart(3,"0")+" PROVIDERS";
 
-  const box = document.getElementById("rows");
-  box.innerHTML = "";
+  const box=document.getElementById("rows");
+  box.innerHTML="";
   if(!res.length){
-    box.innerHTML = '<div class="none">No provider in this dataset lists '+esc(country||"these filters")+'.<br><br>'+
-      'That usually means <b>missing data, not absence</b> — 55% of crypto providers publish no country list at all.<br><br>'+
-      'If one works where you are, add a report.</div>';
+    const q=document.getElementById("q").value.trim();
+    box.innerHTML = '<div class="none">'+(
+      q ? 'Nothing matches “'+esc(q)+'”'+(country?' in '+esc(country):'')+'.<br>Clear the search to widen it.'
+        : (verifiedOnly ? 'Nothing verified here yet. That is the backlog, not the answer — try clearing the verified filter.'
+        : 'No provider lists '+esc(country||'these filters')+'.<br><br>That usually means <b>missing data, not absence</b> — 55% of crypto providers publish no country list at all.')
+    )+'</div>';
     return;
   }
-  const frag = document.createDocumentFragment();
+  const frag=document.createDocumentFragment();
   res.forEach((p,i)=>{
-    const gaps = gapsOf(p), reps = reportsFor(p.name, country);
-    const st = statusIn(p, country);
-    const d = document.createElement("div");
-    d.className = "row" + (st==="blocked" ? " blocked-row" : "");
-    d.innerHTML =
-      '<span class="n">'+(i+1)+'</span>'+
-      '<div><h3>'+esc(p.name)+'</h3>'+
-      '<p>'+esc(p.category==="hybrid"?"Hybrid fiat + crypto":"Web3-native · self-custodial")+
-        (p.hq&&p.hq!=="—" ? " · "+esc(p.hq) : "")+'</p>'+
-      '<div class="tags">'+
-        (STATUS_TAG[st] ? STATUS_TAG[st][0] : '')+
-        (p.card_network?'<span class="tag">'+esc(p.card_network)+'</span>':'')+
-        (reps.length?'<span class="tag rep">'+reps.length+' report'+(reps.length===1?'':'s')+'</span>':'')+
-        (VERIFIED[p.name] ? '' : gaps.map(g=>'<span class="tag gap">No '+g+'</span>').join(''))+
-      '</div></div>'+
-      '<div></div>';
-    d.onclick = ()=>openDetail(p);
-    frag.appendChild(d);
+    const st=statusIn(p,country), v=VERIFIED[p.name], reps=reportsFor(p.name,country);
+    const gaps=gapsOf(p), fee=feeOf(p);
+    const stale = v && ageDays(v.checked) > STALE_DAYS;
+    const b=document.createElement("button");
+    b.className="row"+(st==="blocked"?" blocked":"");
+    b.setAttribute("role","listitem");
+    b.setAttribute("aria-label", p.name+(country?" in "+country:"")+" — "+(st||"unknown"));
+    b.innerHTML =
+      '<span class="rtop"><span class="n">'+(i+1)+'</span><h3>'+esc(p.name)+'</h3></span>'+
+      '<span class="rbody">'+
+        '<p>'+esc(p.category==="hybrid"?"Hybrid fiat + crypto":"Web3-native · self-custodial")+
+          (p.hq&&p.hq!=="—"?" · "+esc(p.hq):"")+
+          (v?" · "+esc(v.breadth):"")+'</p>'+
+        (fee?'<p class="fee">'+esc(fee)+'</p>':'')+
+        '<span class="tags">'+
+          (STATUS_TAG[st]||'')+
+          (p.card_network?'<span class="tag">'+esc(p.card_network)+'</span>':'')+
+          (reps.length?'<span class="tag rep">'+reps.length+' report'+(reps.length===1?'':'s')+'</span>':'')+
+          (stale?'<span class="tag stale">Re-check due</span>':'')+
+          (v?'':gaps.map(g=>'<span class="tag gap">No '+g+'</span>').join(''))+
+        '</span>'+
+      '</span>';
+    b.onclick=()=>openDetail(p);
+    frag.appendChild(b);
   });
   box.appendChild(frag);
 }
 
 /* ==================== detail ==================== */
-function openDetail(p){
-  selected = p;
-  const brand = brandOf(p);
-  document.documentElement.style.setProperty("--brand", brand);
+function openDetail(p, silent){
+  selected=p;
+  document.documentElement.style.setProperty("--brand", brandOf(p));
   paint();
-
   document.getElementById("d-cat").textContent =
-    (p.category==="hybrid" ? "Hybrid_Fiat+Crypto" : "Web3_Native") + (p.custody ? " · " + p.custody : "");
-  document.getElementById("d-name").textContent = p.name;
+    (p.category==="hybrid"?"Hybrid_Fiat+Crypto":"Web3_Native")+(p.custody?" · "+p.custody:"");
+  document.getElementById("d-name").textContent=p.name;
   document.getElementById("d-sub").textContent =
-    [p.hq && p.hq!=="—" ? p.hq : null, p.founded ? "Founded "+p.founded : null, p.regulation_type].filter(Boolean).join(" · ");
+    [p.hq&&p.hq!=="—"?p.hq:null, p.founded?"Founded "+p.founded:null, p.regulation_type].filter(Boolean).join(" · ");
 
-  const cov = p._cov, reps = reportsFor(p.name, null);
-  const fld = (k,v,missing) => '<div class="fld"><div class="k">'+k+'</div><div class="v'+(missing?' miss':'')+'">'+v+'</div></div>';
-  let h = "";
+  const cov=p._cov, v=VERIFIED[p.name], reps=reportsFor(p.name,null);
+  const fld=(k,val,miss)=>'<div class="fld"><div class="k">'+k+'</div><div class="v'+(miss?' miss':'')+'">'+val+'</div></div>';
+  let h="";
 
-  const ver = VERIFIED[p.name];
-  if(ver){
+  if(country){
+    const st=statusIn(p,country);
+    h += fld("In "+esc(country),
+      st==="verified" ? '<span class="tag ok">Available</span>'
+      : st==="blocked" ? '<span class="tag no">Not available</span>'
+      : st==="listed"  ? '<span class="tag">Listed by the dataset — unverified</span>'
+      : '<span class="tag">Only a “global” claim — nobody has checked</span>');
+  }
+
+  if(v){
+    const age=ageDays(v.checked);
     h += fld("Verified reach",
-      '<b>'+esc(ver.breadth)+'</b>'+
-      (ver.note ? '<p class="note">'+esc(ver.note)+'</p>' : '')+
-      '<p class="note">Checked '+esc(ver.checked)+' · '+
-        (ver.confidence==="issuer" ? "issuer documentation" : "secondary source")+' · '+
-        '<a href="'+esc(ver.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
-    h += fld("Will NOT serve",
-      '<div class="cl no">'+ver.excludes.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join('')+'</div>'+
-      '<p class="note">'+ver.excludes.length+' countries excluded outright, whatever the marketing says.</p>');
-    if(cov.set.size) h += fld("Dataset claims",
-      '<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>'+
-      '<p class="note">The open dataset lists only these '+cov.set.size+'. That is the gap.</p>');
+      '<b>'+esc(v.breadth)+'</b>'+
+      (v.note?'<p class="note">'+esc(v.note)+'</p>':'')+
+      '<p class="note">Checked '+esc(v.checked)+' ('+age+' days ago)'+
+        (age>STALE_DAYS?' — <b>re-check due</b>':'')+' · '+
+        (v.confidence==="issuer"?"issuer documentation":"secondary source")+' · '+
+        '<a href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
+    h += fld(v.mode==="block"?"Will NOT serve":"Available only in",
+      '<div class="cl'+(v.mode==="block"?' no':'')+'">'+
+        v.list.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join('')+'</div>'+
+      '<p class="note">'+v.list.length+(v.mode==="block"
+        ? ' countries excluded outright, whatever the marketing says.'
+        : ' countries — everywhere else is a no.')+'</p>');
+    if(cov.set.size||cov.global) h += fld("Dataset says",
+      (cov.set.size?'<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>':'')+
+      '<p class="note">The open dataset lists '+(cov.set.size?'only these '+cov.set.size:'nothing but “Global”')+'. That is the gap.</p>');
   } else {
     h += fld("Available in", cov.set.size
       ? '<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>'
-        + (cov.global ? '<p class="note">Also claims worldwide availability — unverified.</p>' : '')
-      : (cov.global ? 'Claims “Global” — no country list published, and nobody has checked' : 'Not published'),
-      !cov.set.size);
+        + (cov.global?'<p class="note">Also claims worldwide availability — unverified.</p>':'')
+      : (cov.global?'Claims “Global” — no country list published, and nobody has checked yet'
+                   :'Not published'), !cov.set.size);
   }
 
+  h += fld("Fees", feeOf(p) ? esc(feeOf(p)) + (p.fx_markup&&p.fx_markup.as_of&&!(v&&v.fee)
+        ? '<p class="note">as of '+esc(p.fx_markup.as_of)+'</p>':'')
+      : "Not published — unverified", !feeOf(p));
   h += fld("On / off ramp", (p.services||[]).length
       ? '<div class="tags">'+p.services.map(s=>'<span class="tag">'+esc(s)+'</span>').join('')+'</div>'
-      : 'Not published — unverified', !(p.services||[]).length);
-
-  h += fld("FX fee", p.fx_markup
-      ? esc(p.fx_markup.markup) + (p.fx_markup.as_of ? '<br><span class="note">as of '+esc(p.fx_markup.as_of)+'</span>' : '')
-      : 'Not published — unverified', !p.fx_markup);
-
-  h += fld("Card", [p.card_network, p.card_type].filter(Boolean).join(" · ") || "None", !p.card_network);
-  h += fld("Cashback", p.cashback || "None advertised", !p.cashback);
-  h += fld("Yield", p.yield || "None advertised", !p.yield);
-  h += fld("Stablecoins", p.stablecoins ? "Yes" : "No");
-  h += fld("KYC", p.kyc || "Unknown", !p.kyc);
-  h += fld("Licence", esc(p.license || "Not published"), !p.license);
+      : "Not published — unverified", !(p.services||[]).length);
+  h += fld("Card", [p.card_network,p.card_type].filter(Boolean).join(" · ")||"None", !p.card_network);
+  h += fld("Cashback", p.cashback||"None advertised", !p.cashback);
+  h += fld("Yield", p.yield||"None advertised", !p.yield);
+  h += fld("Stablecoins", p.stablecoins?"Yes":"No");
+  h += fld("KYC", p.kyc||"Unknown", !p.kyc);
+  h += fld("Licence", esc(p.license||"Not published"), !p.license);
   if(p.note) h += fld("Note", esc(p.note));
-  if(p.website) h += fld("Site", '<a href="'+esc(p.website)+'" target="_blank" rel="noopener noreferrer">'+esc(p.domain||p.website)+'</a>');
+  if(p.website) h += fld("Site",'<a href="'+esc(p.website)+'" target="_blank" rel="noopener noreferrer">'+esc(p.domain||p.website)+'</a>');
 
   if(reps.length){
     h += '<div class="fld"><div class="k">Community</div><div class="v">'+
       reps.map(r=>'<div style="margin-bottom:8px"><span class="tag rep">'+esc(OUTCOME_LABEL[r.outcome]||r.outcome)+'</span> '+
-        '<b style="font-size:12px">'+esc(r.country)+'</b>'+
+        '<b style="font-size:13px">'+esc(r.country)+'</b>'+
         (r.note?'<div class="note" style="margin-top:3px">'+esc(r.note)+'</div>':'')+'</div>').join('')+
       '</div></div>';
   }
 
-  const gaps = gapsOf(p);
-  h += '<div class="verifybox"><span class="lbl">'+(gaps.length?"Help_Verify":"Confirm_This")+'</span>'+
-    '<p>'+(gaps.length
-      ? 'This provider publishes no '+gaps.join(", ").toLowerCase()+'. If you have used it, your report fills the gap for everyone else.'
-      : 'Published data looks complete — but published is not the same as true. Did it actually work where you are?')+'</p>'+
-    '<button class="solid" id="verify-btn">Add a report</button></div>';
+  const gaps=gapsOf(p);
+  h += '<div class="verifybox"><span class="lbl">'+(v?"Confirm_This":"Help_Verify")+'</span>'+
+    '<p>'+(v ? 'This one has been checked against '+(v.confidence==="issuer"?"the issuer's own docs":"a secondary source")+
+              '. Published is still not the same as true — did it work where you are?'
+            : 'Nobody has verified this provider yet'+(gaps.length?'; it publishes no '+gaps.join(", ").toLowerCase():'')+
+              '. Your report is how it gets checked.')+'</p>'+
+    '<button class="solid" id="verify-btn">Add a report</button>'+
+    '<button class="ghost" id="cmp-btn" style="margin-left:18px">'+(cmp.has(p.name)?"Remove from compare":"Add to compare")+'</button></div>';
 
-  document.getElementById("d-body").innerHTML = h;
-  document.getElementById("d-body").querySelectorAll("[data-c]").forEach(b=>{
-    b.onclick = () => { closeDetail(); selectCountry(b.dataset.c); };
-  });
-  document.getElementById("verify-btn").onclick = () => openModal(p.name);
+  const body=document.getElementById("d-body");
+  body.innerHTML=h; body.scrollTop=0;
+  body.querySelectorAll("[data-c]").forEach(b=>{ b.onclick=()=>{ closeSheets(); selectCountry(b.dataset.c,true); }; });
+  document.getElementById("verify-btn").onclick=()=>openModal(p.name);
+  document.getElementById("cmp-btn").onclick=()=>{ toggleCmp(p.name); openDetail(p,true); };
   document.getElementById("detail").classList.add("on");
+  document.getElementById("back").focus();
+  if(!silent) writeURL(true);
 }
-function closeDetail(){
+function closeSheets(silent){
   document.getElementById("detail").classList.remove("on");
-  selected = null;
-  document.documentElement.style.setProperty("--brand", "#2c3644");
+  document.getElementById("compare").classList.remove("on");
+  selected=null;
+  document.documentElement.style.setProperty("--brand","#2c3644");
   paint();
+  if(!silent) writeURL(true);
 }
-document.getElementById("back").onclick = closeDetail;
+document.getElementById("back").onclick=()=>closeSheets();
+document.getElementById("cback").onclick=()=>closeSheets();
+
+/* ==================== compare ==================== */
+function toggleCmp(name){
+  cmp.has(name) ? cmp.delete(name) : cmp.add(name);
+  if(cmp.size>3){ cmp.delete([...cmp][0]); }
+  const t=document.getElementById("tray");
+  t.classList.toggle("on", cmp.size>0);
+  document.getElementById("tray-n").textContent = cmp.size+" selected"+(cmp.size===3?" (max)":"");
+}
+document.getElementById("tray-clear").onclick=()=>{
+  cmp.clear();
+  document.getElementById("tray").classList.remove("on");
+  if(selected) openDetail(selected, true);
+};
+document.getElementById("tray-go").onclick=()=>openCompare();
+
+function openCompare(){
+  const list=[...cmp].map(n=>ALL.find(p=>p.name===n)).filter(Boolean);
+  if(!list.length) return;
+  document.getElementById("c-title").textContent = list.map(p=>p.name).join("  ·  ");
+  document.getElementById("c-sub").textContent = country ? "Judged for "+country : "No country selected — pick one for a real answer";
+  const row=(k,fn)=>'<tr><th>'+k+'</th>'+list.map(p=>'<td>'+fn(p)+'</td>').join('')+'</tr>';
+  const st=p=>{ const s=statusIn(p,country);
+    return country ? (s==="verified"?'<span class="tag ok">Available</span>'
+      :s==="blocked"?'<span class="tag no">No</span>'
+      :s==="listed"?'<span class="tag">Listed</span>':'<span class="tag">Claim only</span>') : '—'; };
+  document.getElementById("c-body").innerHTML =
+    '<table class="ctable">'+
+    '<tr><th></th>'+list.map(p=>'<td class="nm">'+esc(p.name)+'</td>').join('')+'</tr>'+
+    row(country?"In "+esc(country):"Status", st)+
+    row("Verified", p=>VERIFIED[p.name]?'<span class="tag ok">Yes · '+esc(VERIFIED[p.name].checked)+'</span>':'<span class="tag gap">Not yet</span>')+
+    row("Reach", p=>{const v=VERIFIED[p.name]; return v?esc(v.breadth):(p._cov.global?"“Global” claim":p._cov.set.size+" listed");})+
+    row("Fees", p=>feeOf(p)?esc(feeOf(p)):'<span class="tag gap">Unknown</span>')+
+    row("Card", p=>esc([p.card_network,p.card_type].filter(Boolean).join(" · ")||"—"))+
+    row("Cashback", p=>esc(p.cashback||"—"))+
+    row("Yield", p=>esc(p.yield||"—"))+
+    row("Custody", p=>esc(p.custody||"—"))+
+    row("Ramps", p=>(p.services||[]).length?esc(p.services.join(", ")):'<span class="tag gap">Unknown</span>')+
+    '</table>';
+  document.getElementById("compare").classList.add("on");
+  document.getElementById("cback").focus();
+}
 
 /* ==================== modal ==================== */
 function openModal(prov){
-  const sp = document.getElementById("f-prov");
-  if(prov) sp.value = prov;
-  if(country) document.getElementById("f-ctry").value = country;
+  if(prov) document.getElementById("f-prov").value=prov;
+  if(country) document.getElementById("f-ctry").value=country;
   document.getElementById("ov").classList.add("show");
+  document.getElementById("f-out").focus();
 }
 function closeModal(){
   document.getElementById("ov").classList.remove("show");
-  document.getElementById("err").style.display = "none";
+  document.getElementById("err").style.display="none";
 }
-document.getElementById("open-top").onclick = ()=>openModal(selected?selected.name:null);
-document.getElementById("open-foot").onclick = ()=>openModal(selected?selected.name:null);
-document.getElementById("cancel").onclick = closeModal;
-document.getElementById("ov").onclick = e => { if(e.target.id==="ov") closeModal(); };
-document.addEventListener("keydown", e => { if(e.key==="Escape"){ closeModal(); } });
+document.getElementById("open-top").onclick=()=>openModal(selected?selected.name:null);
+document.getElementById("open-foot").onclick=()=>openModal(selected?selected.name:null);
+document.getElementById("cancel").onclick=closeModal;
+document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") closeModal(); };
 
-document.getElementById("submit").onclick = () => {
-  const rec = {
-    provider: document.getElementById("f-prov").value,
-    country:  document.getElementById("f-ctry").value,
-    outcome:  document.getElementById("f-out").value,
-    note:     document.getElementById("f-note").value.trim(),
-    at: new Date().toISOString()
-  };
-  const err = document.getElementById("err");
-  if(!rec.provider || !rec.country){ err.textContent="Pick a provider and a country"; err.style.display="block"; return; }
-  const arr = store.read(); arr.push(rec); store.write(arr);
-  document.getElementById("f-note").value = "";
-  closeModal();
-  renderList();
-  if(selected) openDetail(selected);
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Escape") return;
+  if(document.getElementById("ov").classList.contains("show")) return closeModal();
+  if(document.getElementById("onb").classList.contains("show")) return closeOnb();
+  if(document.getElementById("compare").classList.contains("on")) return closeSheets();
+  if(document.getElementById("detail").classList.contains("on")) return closeSheets();
+  if(country) selectCountry(null, true);
+});
+
+document.getElementById("submit").onclick=()=>{
+  const rec={ provider:document.getElementById("f-prov").value,
+    country:document.getElementById("f-ctry").value,
+    outcome:document.getElementById("f-out").value,
+    note:document.getElementById("f-note").value.trim(),
+    at:new Date().toISOString() };
+  const err=document.getElementById("err");
+  if(!rec.provider||!rec.country){ err.textContent="Pick a provider and a country"; err.style.display="block"; return; }
+  const arr=store.read(); arr.push(rec); store.write(arr);
+  document.getElementById("f-note").value="";
+  closeModal(); renderList();
+  if(selected) openDetail(selected,true);
   toast("Report saved — thank you");
 };
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"), 3200); }
+  setTimeout(()=>t.classList.remove("show"),3200); }
 
-/* ==================== boot ==================== */
+/* ==================== onboarding ==================== */
+function closeOnb(){ document.getElementById("onb").classList.remove("show");
+  try{ localStorage.setItem("atlas_onb","1"); }catch(e){} }
+document.getElementById("onb-skip").onclick=closeOnb;
+document.getElementById("onb-go").onclick=()=>{
+  const c=document.getElementById("onb-c").value;
+  closeOnb(); if(c) selectCountry(c,true);
+};
+
+/* ==================== chips & selects ==================== */
 function buildChips(){
-  const cats = document.getElementById("cats");
+  const cats=document.getElementById("cats");
   [["hybrid","Hybrid fiat+crypto"],["web3-native","Web3-native"]].forEach(([v,l])=>{
-    const b=document.createElement("button"); b.className="tag"; b.textContent=l;
+    const b=document.createElement("button"); b.className="tag"; b.type="button"; b.textContent=l;
     b.onclick=()=>{ activeCats.has(v)?activeCats.delete(v):activeCats.add(v); b.classList.toggle("on"); applyFilters(); };
     cats.appendChild(b);
   });
-  const sv = document.getElementById("svcs");
+  const bv=document.createElement("button"); bv.className="tag"; bv.type="button"; bv.textContent="Verified only";
+  bv.onclick=()=>{ verifiedOnly=!verifiedOnly; if(verifiedOnly) queueOnly=false, bq.classList.remove("on");
+    bv.classList.toggle("on"); applyFilters(); };
+  cats.appendChild(bv);
+  const bq=document.createElement("button"); bq.className="tag"; bq.type="button"; bq.textContent="Needs checking";
+  bq.onclick=()=>{ queueOnly=!queueOnly; if(queueOnly) verifiedOnly=false, bv.classList.remove("on");
+    bq.classList.toggle("on"); applyFilters(); };
+  cats.appendChild(bq);
+
+  const sv=document.getElementById("svcs");
   SERVICES.forEach(s=>{
-    const b=document.createElement("button"); b.className="tag"; b.textContent=s;
+    const b=document.createElement("button"); b.className="tag"; b.type="button"; b.textContent=s;
     b.onclick=()=>{ activeSvcs.has(s)?activeSvcs.delete(s):activeSvcs.add(s); b.classList.toggle("on"); applyFilters(); };
     sv.appendChild(b);
   });
 }
-/* Every country the user might be in — globe geometry plus anything the
-   dataset mentions. world-atlas 110m omits city-states (Singapore, Hong Kong,
-   Gibraltar), and those are exactly where several providers are based. */
 function allCountries(){
-  const s = new Set(feats.map(f=>f.properties.name));
+  const s=new Set(feats.map(f=>f.properties.name));
   EU.forEach(c=>s.add(norm(c)));
   ALL.forEach(p=>p._cov.set.forEach(c=>s.add(c)));
+  Object.values(VERIFIED).forEach(v=>v.set.forEach(c=>s.add(c)));
   return [...s].sort((a,b)=>a.localeCompare(b));
 }
 function fillSelects(){
-  const list = allCountries();
-
-  const sp = document.getElementById("f-prov");
-  sp.innerHTML = "";
+  const list=allCountries();
+  const sp=document.getElementById("f-prov"); sp.innerHTML="";
   ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>sp.add(new Option(p.name,p.name)));
-
-  const sc = document.getElementById("f-ctry");
-  const keepC = sc.value;
-  sc.innerHTML = "";
-  list.forEach(c=>sc.add(new Option(c,c)));
-  if(keepC) sc.value = keepC;
-
-  const pk = document.getElementById("pick");
-  const keepP = pk.value;
-  pk.innerHTML = "";
-  pk.add(new Option("Every country…",""));
-  list.forEach(c=>{
-    const n = ALL.filter(p=>p._cov.set.has(c)).length;
-    pk.add(new Option(c + (n ? "  ·  " + n : "  ·  0 listed"), c));
+  [["f-ctry",""],["pick","Every country…"],["onb-c",""]].forEach(([id,ph])=>{
+    const el=document.getElementById(id); if(!el) return;
+    const keep=el.value; el.innerHTML="";
+    if(id==="pick") el.add(new Option(ph,""));
+    list.forEach(c=>{
+      const n=ALL.filter(p=>{const s=statusIn(p,c);return s==="verified"||s==="listed";}).length;
+      el.add(new Option(c+(id==="pick"?"  ·  "+n:""), c));
+    });
+    if(keep) el.value=keep;
   });
-  pk.value = keepP || (country || "");
 }
+
+/* ==================== boot ==================== */
 function ingest(data){
-  const ents = (data.entities||[]).filter(e=>e.category && e.category!=="traditional");
-  ALL = ents.map(e=>{ e._cov = coverage(e); return e; });
-  const t = (data.entities||[]).length || 1;
-  const withC = (data.entities||[]).filter(e=>e.countries&&e.countries.length).length;
-  const withS = (data.entities||[]).filter(e=>e.services&&e.services.length).length;
-  const withF = (data.entities||[]).filter(e=>e.fx_markup).length;
-  document.getElementById("g1").textContent = Math.round(withC/t*100) + "%";
-  document.getElementById("g2").textContent = Math.round(withS/t*100) + "%";
-  document.getElementById("g3").textContent = Math.round(withF/t*100) + "%";
-  document.getElementById("g4").textContent = Object.keys(VERIFIED).length + " / " + ALL.length;
+  const ents=(data.entities||[]).filter(e=>e.category && e.category!=="traditional");
+  ALL = ents.map(e=>{ e._cov=coverage(e); return e; });
+  const t=(data.entities||[]).length||1;
+  const pct=n=>Math.round(n/t*100)+"%";
+  document.getElementById("g1").textContent=pct((data.entities||[]).filter(e=>e.countries&&e.countries.length).length);
+  document.getElementById("g2").textContent=pct((data.entities||[]).filter(e=>e.services&&e.services.length).length);
+  document.getElementById("g3").textContent=pct((data.entities||[]).filter(e=>e.fx_markup).length);
+  document.getElementById("g4").textContent=Object.keys(VERIFIED).length+" / "+ALL.length;
   fillSelects();
   applyFilters();
+  const fromURL = readURL();
+  let seen=false; try{ seen=!!localStorage.getItem("atlas_onb"); }catch(e){}
+  if(!fromURL && !seen) document.getElementById("onb").classList.add("show");
 }
 
 buildChips();
 initGlobe();
 document.getElementById("q").addEventListener("input", applyFilters);
-document.getElementById("pick").addEventListener("change", e => selectCountry(e.target.value, true));
-document.getElementById("ftoggle").onclick = function(){
-  const open = document.getElementById("dir").classList.toggle("filters-open");
-  this.setAttribute("aria-expanded", open);
-  this.querySelector("span").textContent = open ? "−" : "+";
+document.getElementById("pick").addEventListener("change", e=>selectCountry(e.target.value,true));
+document.getElementById("sort").addEventListener("change", e=>{ sortMode=e.target.value; renderList(); });
+document.getElementById("ftoggle").onclick=function(){
+  const open=document.getElementById("dir").classList.toggle("filters-open");
+  this.setAttribute("aria-expanded",open);
+  this.querySelector("span").textContent = open?"−":"+";
 };
 
 fetch("/nb-data.json")
-  .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => { ingest(d); document.getElementById("src").textContent = "Source: neobankbeat · live"; })
-  .catch(() => { ingest(FALLBACK); document.getElementById("src").textContent = "Source: offline sample"; });
+  .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d=>ingest(d))
+  .catch(()=>ingest(FALLBACK));
 </script>
 </body>
 </html>
