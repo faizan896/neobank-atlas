@@ -78,6 +78,11 @@
   button.tag.on{background:var(--brand);color:var(--paper);border-color:var(--brand)}
   .tag.gap{border-style:dashed;color:var(--warn);border-color:var(--warn)}
   .tag.rep{border-color:var(--good);color:var(--good)}
+  .tag.ok{background:var(--good);border-color:var(--good);color:#fff}
+  .tag.no{background:var(--bad);border-color:var(--bad);color:#fff}
+  .blocked-row{opacity:.55}
+  .blocked-row:hover{opacity:1}
+  .cl.no button{border-color:var(--bad);color:var(--bad)}
   .frow{margin-top:11px}
   .frow>.lbl{display:block;margin-bottom:6px;color:var(--muted)}
   #ftoggle{display:none;width:100%;text-align:left;border:1px solid var(--line);padding:11px 12px;
@@ -251,6 +256,7 @@
       <div><b id="g1">—</b><span>have any country data</span></div>
       <div><b id="g2">—</b><span>list on/off-ramps</span></div>
       <div><b id="g3">—</b><span>publish real FX fees</span></div>
+      <div><b id="g4">—</b><span>checked by hand so far</span></div>
     </div>
 
     <div class="filters">
@@ -382,6 +388,47 @@ const hashColor = s => {
 };
 const brandOf = p => BRAND[p.name] || hashColor(p.name || "x");
 
+/* ============================================================
+   VERIFIED LAYER — checked by hand against the issuer's own docs.
+   The base dataset models availability as an inclusion list, but these
+   providers work the opposite way: open almost everywhere, with an
+   explicit blocklist. That mismatch is why "Global" is so misleading —
+   KAST is in 170+ countries AND bans Pakistan outright.
+   Every row is dated. Re-check before trusting any of it.
+   ============================================================ */
+const VERIFIED = {
+  "RedotPay": {
+    breadth: "130+ countries", checked: "2026-07-29", confidence: "secondary",
+    source: "https://redotpayhelp.com/supported-countries",
+    excludes: ["United States of America","China","Russia","Ukraine","Venezuela","Iran","Iraq",
+      "Syria","North Korea","Afghanistan","Albania","Algeria","Bangladesh","Belarus"]
+  },
+  "KAST": {
+    breadth: "170+ countries", checked: "2026-07-29", confidence: "issuer",
+    source: "https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
+    excludes: ["Afghanistan","Albania","Armenia","Belarus","Bulgaria","Burkina Faso","Burundi",
+      "Cambodia","Cameroon","Central African Rep.","China","Cuba","Eritrea","Guinea-Bissau","Haiti",
+      "Indonesia","Iran","Iraq","Jamaica","Jordan","Kenya","North Korea","Lebanon","Liberia","Libya",
+      "Mali","Morocco","Mozambique","Myanmar","Namibia","Nicaragua","Pakistan","Palau","Philippines",
+      "Russia","Rwanda","Senegal","Sierra Leone","Somalia","South Africa","S. Sudan","Sudan","Syria",
+      "Tanzania","Uganda","Ukraine","Venezuela","Yemen","Zimbabwe"]
+  },
+  "Plasma One": {
+    breadth: "150+ countries · invite only", checked: "2026-07-29", confidence: "secondary",
+    source: "https://www.plasma.org/personal",
+    excludes: ["United States of America","Cuba","Iran","North Korea","Syria"]
+  },
+  "EtherFi Cash": {
+    breadth: "Most of Europe, LatAm, APAC, UAE", checked: "2026-07-29", confidence: "issuer",
+    source: "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
+    note: "Live in the US, but not in 20 states.",
+    excludes: ["Belarus","Bangladesh","China","Cuba","Estonia","Finland","Hungary","India","Iraq",
+      "Israel","Nepal","Netherlands","North Korea","Philippines","Russia","Syria","Turkey","Ukraine",
+      "Venezuela","Vietnam"]
+  }
+};
+Object.values(VERIFIED).forEach(v => v.set = new Set(v.excludes.map(c => (typeof ALIAS!=="undefined" && ALIAS[c]) || c)));
+
 const SERVICES = ["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"];
 const OUTCOME_LABEL = {
   signup_ok:"Signup OK", kyc_reject:"KYC rejected", card_ok:"Card works",
@@ -418,6 +465,23 @@ function coverage(p){
   });
   return {set:out, global};
 }
+/* How does this provider stand in this country?
+   verified > blocked > listed > claim  */
+function statusIn(p, ctry){
+  const v = VERIFIED[p.name];
+  if(!ctry) return v ? "verified" : (p._cov.set.size ? "listed" : (p._cov.global ? "claim" : null));
+  if(v) return v.set.has(ctry) ? "blocked" : "verified";
+  if(p._cov.set.has(ctry)) return "listed";
+  if(p._cov.global) return "claim";
+  return null;
+}
+const STATUS_TAG = {
+  verified:['<span class="tag ok">Verified</span>'],
+  blocked :['<span class="tag no">Blocked here</span>'],
+  listed  :[''],
+  claim   :['<span class="tag">Global claim</span>']
+};
+
 function reportsFor(name, ctry){
   return store.read().filter(r=>r.provider===name && (!ctry || r.country===ctry));
 }
@@ -522,7 +586,11 @@ function applyFilters(){
 }
 function listForCountry(){
   if(!country) return VIEW;
-  return VIEW.filter(p => p._cov.set.has(country) || p._cov.global);
+  const rank = {verified:0, listed:1, claim:2, blocked:3};
+  return VIEW.map(p => [p, statusIn(p, country)])
+             .filter(([,s]) => s)
+             .sort((a,b) => rank[a[1]] - rank[b[1]])
+             .map(([p]) => p);
 }
 
 function selectCountry(name, keepToggle){
@@ -569,18 +637,19 @@ function renderList(){
   const frag = document.createDocumentFragment();
   res.forEach((p,i)=>{
     const gaps = gapsOf(p), reps = reportsFor(p.name, country);
+    const st = statusIn(p, country);
     const d = document.createElement("div");
-    d.className = "row";
+    d.className = "row" + (st==="blocked" ? " blocked-row" : "");
     d.innerHTML =
       '<span class="n">'+(i+1)+'</span>'+
       '<div><h3>'+esc(p.name)+'</h3>'+
       '<p>'+esc(p.category==="hybrid"?"Hybrid fiat + crypto":"Web3-native · self-custodial")+
         (p.hq&&p.hq!=="—" ? " · "+esc(p.hq) : "")+'</p>'+
       '<div class="tags">'+
+        (STATUS_TAG[st] ? STATUS_TAG[st][0] : '')+
         (p.card_network?'<span class="tag">'+esc(p.card_network)+'</span>':'')+
-        (p._cov.global&&(!country||!p._cov.set.has(country))?'<span class="tag">Global claim</span>':'')+
         (reps.length?'<span class="tag rep">'+reps.length+' report'+(reps.length===1?'':'s')+'</span>':'')+
-        gaps.map(g=>'<span class="tag gap">No '+g+'</span>').join('')+
+        (VERIFIED[p.name] ? '' : gaps.map(g=>'<span class="tag gap">No '+g+'</span>').join(''))+
       '</div></div>'+
       '<div></div>';
     d.onclick = ()=>openDetail(p);
@@ -606,11 +675,27 @@ function openDetail(p){
   const fld = (k,v,missing) => '<div class="fld"><div class="k">'+k+'</div><div class="v'+(missing?' miss':'')+'">'+v+'</div></div>';
   let h = "";
 
-  h += fld("Available in", cov.set.size
+  const ver = VERIFIED[p.name];
+  if(ver){
+    h += fld("Verified reach",
+      '<b>'+esc(ver.breadth)+'</b>'+
+      (ver.note ? '<p class="note">'+esc(ver.note)+'</p>' : '')+
+      '<p class="note">Checked '+esc(ver.checked)+' · '+
+        (ver.confidence==="issuer" ? "issuer documentation" : "secondary source")+' · '+
+        '<a href="'+esc(ver.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
+    h += fld("Will NOT serve",
+      '<div class="cl no">'+ver.excludes.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join('')+'</div>'+
+      '<p class="note">'+ver.excludes.length+' countries excluded outright, whatever the marketing says.</p>');
+    if(cov.set.size) h += fld("Dataset claims",
+      '<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>'+
+      '<p class="note">The open dataset lists only these '+cov.set.size+'. That is the gap.</p>');
+  } else {
+    h += fld("Available in", cov.set.size
       ? '<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>'
-        + (cov.global ? '<p class="note">Also claims worldwide availability.</p>' : '')
-      : (cov.global ? 'Claims “Global” — no country list published' : 'Not published'),
+        + (cov.global ? '<p class="note">Also claims worldwide availability — unverified.</p>' : '')
+      : (cov.global ? 'Claims “Global” — no country list published, and nobody has checked' : 'Not published'),
       !cov.set.size);
+  }
 
   h += fld("On / off ramp", (p.services||[]).length
       ? '<div class="tags">'+p.services.map(s=>'<span class="tag">'+esc(s)+'</span>').join('')+'</div>'
@@ -753,6 +838,7 @@ function ingest(data){
   document.getElementById("g1").textContent = Math.round(withC/t*100) + "%";
   document.getElementById("g2").textContent = Math.round(withS/t*100) + "%";
   document.getElementById("g3").textContent = Math.round(withF/t*100) + "%";
+  document.getElementById("g4").textContent = Object.keys(VERIFIED).length + " / " + ALL.length;
   fillSelects();
   applyFilters();
 }
