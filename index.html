@@ -365,7 +365,9 @@ function initGlobe(){
     })
     .onPolygonClick(d => d && selectCountry(d.properties.name));
   try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
-  const c = globe.controls(); c.autoRotate = true; c.autoRotateSpeed = .3; c.enableDamping = true;
+  /* auto-rotate is off: a spinning globe turns every click into a drag,
+     and this globe exists to be clicked. */
+  const c = globe.controls(); c.autoRotate = false; c.enableDamping = true;
   globe.pointOfView({lat:22, lng:30, altitude:2.4});
 
   const fit = () => { const el = document.getElementById("view");
@@ -434,10 +436,9 @@ function selectCountry(name){
     const f = feats.find(x=>x.properties.name===country);
     if(f){
       const cc = centroid(f);
-      globe.controls().autoRotate = false;
       globe.pointOfView({lat:cc[1], lng:cc[0], altitude:1.7}, 900);
     }
-  } else if(globe){ globe.controls().autoRotate = true; }
+  } else if(globe){ globe.pointOfView({lat:22, lng:30, altitude:2.4}, 900); }
   paint(); renderList();
 }
 function centroid(f){
