@@ -43,7 +43,7 @@
   #reset.on{display:block}
 
   /* ---------------- panel ---------------- */
-  #dir{flex:0 0 500px;max-width:46%;background:var(--paper);border-left:1px solid var(--rule);
+  #dir{position:relative;flex:0 0 500px;max-width:46%;background:var(--paper);border-left:1px solid var(--rule);
     display:flex;flex-direction:column;min-height:0}
 
   .head{padding:22px 28px 20px;border-bottom:1px solid var(--rule)}
@@ -354,7 +354,7 @@ function initGlobe(){
     .backgroundColor("#b3c4d8")
     .showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
     .showGraticules(true)
-    .polygonAltitude(d => d === hoverD ? .022 : .008)
+    .polygonAltitude(.01)
     .polygonSideColor(()=> "rgba(110,132,160,.28)")
     .polygonStrokeColor(()=> "#6b7f96")
     .polygonLabel(d => {
@@ -363,8 +363,7 @@ function initGlobe(){
         background:#f7f7f5;border:1px solid #1a1a1a;padding:6px 9px;font-size:10px;letter-spacing:.06em;
         text-transform:uppercase;color:#0a0a0a">${esc(n)} — ${c} provider${c===1?"":"s"}</div>`;
     })
-    .onPolygonHover(d => { hoverD = d; if(globe) globe.polygonAltitude(x => x===hoverD ? .022 : .008); })
-    .onPolygonClick(d => selectCountry(d.properties.name));
+    .onPolygonClick(d => d && selectCountry(d.properties.name));
   try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
   const c = globe.controls(); c.autoRotate = true; c.autoRotateSpeed = .3; c.enableDamping = true;
   globe.pointOfView({lat:22, lng:30, altitude:2.4});
