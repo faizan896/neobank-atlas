@@ -363,7 +363,21 @@ function initGlobe(){
         background:#f7f7f5;border:1px solid #1a1a1a;padding:6px 9px;font-size:10px;letter-spacing:.06em;
         text-transform:uppercase;color:#0a0a0a">${esc(n)} — ${c} provider${c===1?"":"s"}</div>`;
     })
-    .onPolygonClick(d => d && selectCountry(d.properties.name));
+    /* globe.gl's own click detection is unreliable over the WebGL canvas
+       (any sub-pixel movement between press and release is read as a drag),
+       so selection is driven off the hover raycast, which is dependable. */
+    .onPolygonHover(d => { hoverName = d ? d.properties.name : null;
+      document.getElementById("globe").style.cursor = d ? "pointer" : "grab"; });
+
+  let downAt = null;
+  const gel = document.getElementById("globe");
+  gel.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; });
+  gel.addEventListener("pointerup", e => {
+    if(!downAt || !hoverName) return;
+    const moved = Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]);
+    downAt = null;
+    if(moved < 6) selectCountry(hoverName);   // a click, not a drag
+  });
   try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
   /* auto-rotate is off: a spinning globe turns every click into a drag,
      and this globe exists to be clicked. */
@@ -380,7 +394,7 @@ function initGlobe(){
     paint();
   }).catch(()=>{});
 }
-let hoverD = null;
+let hoverName = null;
 
 function countryCount(atlasName){
   return VIEW.filter(p => p._cov.set.has(atlasName)).length;
