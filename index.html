@@ -76,6 +76,9 @@
   .tag.rep{border-color:var(--good);color:var(--good)}
   .frow{margin-top:11px}
   .frow>.lbl{display:block;margin-bottom:6px;color:var(--muted)}
+  #ftoggle{display:none;width:100%;text-align:left;border:1px solid var(--line);padding:11px 12px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+  #ftoggle span{float:right;font-size:12px;line-height:1}
 
   .meta-row{padding:9px 28px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
 
@@ -157,21 +160,27 @@
 
   /* ---------- phone ---------- */
   @media(max-width:600px){
-    #view{flex:0 0 32vh;min-height:200px}
+    /* the header block must not eat the screen before the first result */
+    #view{flex:0 0 26vh;min-height:168px}
     #legend{display:none}
+    #ftoggle{display:block;margin-top:2px}
+    #advf{display:none;margin-top:14px}
+    #dir.filters-open #advf{display:block}
+    .head h1{font-size:25px}
+    .cta{padding:12px 16px}
     #s-tl{font-size:9.5px;top:14px;left:16px}
     #s-br{font-size:9.5px;bottom:14px;right:16px}
     #reset{top:12px;right:12px;padding:8px 12px}
 
     /* title and CTA stack; CTA goes full width and finger-sized */
-    .head{padding:18px 16px 16px}
-    .head-top{flex-direction:column;align-items:stretch;gap:14px}
-    .head h1{font-size:29px;margin-top:6px}
-    .cta{width:100%;text-align:center;padding:14px 16px;font-size:10px}
+    .head{padding:16px 16px 14px}
+    .head-top{flex-direction:column;align-items:stretch;gap:12px}
+    .head h1{margin-top:5px}
+    .cta{width:100%;text-align:center;font-size:10px}
 
-    .gapbar{padding:12px 16px;gap:10px}
-    .gapbar b{font-size:17px}
-    .gapbar span{font-size:7.5px;letter-spacing:.06em}
+    .gapbar{padding:10px 16px;gap:8px}
+    .gapbar b{font-size:16px}
+    .gapbar span{font-size:7px;letter-spacing:.05em}
 
     .filters{padding:14px 16px 16px}
     /* 16px stops iOS zooming the page when a field is focused */
@@ -242,16 +251,19 @@
 
     <div class="filters">
       <input class="uline" id="q" placeholder="Search provider…" autocomplete="off">
-      <div class="tags" id="cats"></div>
-      <div class="frow">
-        <span class="lbl">Must support</span>
-        <div class="tags" id="svcs"></div>
-      </div>
-      <div class="frow">
-        <span class="lbl">Or pick a country</span>
-        <select class="uline" id="pick" style="margin-bottom:0">
-          <option value="">Every country…</option>
-        </select>
+      <button id="ftoggle" aria-expanded="false">Filters &amp; country <span>+</span></button>
+      <div id="advf">
+        <div class="tags" id="cats"></div>
+        <div class="frow">
+          <span class="lbl">Must support</span>
+          <div class="tags" id="svcs"></div>
+        </div>
+        <div class="frow">
+          <span class="lbl">Or pick a country</span>
+          <select class="uline" id="pick" style="margin-bottom:0">
+            <option value="">Every country…</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -745,6 +757,11 @@ buildChips();
 initGlobe();
 document.getElementById("q").addEventListener("input", applyFilters);
 document.getElementById("pick").addEventListener("change", e => selectCountry(e.target.value, true));
+document.getElementById("ftoggle").onclick = function(){
+  const open = document.getElementById("dir").classList.toggle("filters-open");
+  this.setAttribute("aria-expanded", open);
+  this.querySelector("span").textContent = open ? "−" : "+";
+};
 
 fetch("/nb-data.json")
   .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
