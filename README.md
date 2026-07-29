@@ -4,7 +4,7 @@
 
 Click a country on the globe. See every hybrid and web3-native neobank that lists it — plus what each one *doesn't* tell you.
 
-_Live: (add Vercel URL after deploy)_
+**Live:** https://neobank-atlas.vercel.app
 
 ## Why this exists
 
@@ -33,6 +33,12 @@ So "which card works in Pakistan, can I off-ramp to my bank, and what is the rea
 Base layer is fetched live from neobankbeat's `data.json` through a Vercel rewrite at `/nb-data.json` — their endpoint does not send CORS headers, so a same-origin proxy is required. An offline sample is bundled so the page is never blank.
 
 Country strings are normalised before matching: `"European Union"` expands to its 27 members, `"UAE" → "United Arab Emirates"`, `"Türkiye" → "Turkey"`, and so on. `"Global"` is shown as a claim, not painted onto every country.
+
+**City-states.** world-atlas at 110m resolution has no polygon for Singapore, Hong Kong or Gibraltar — which between them are home to 12 provider listings, including RedotPay and KAST. They are unreachable by clicking the globe, so the **country picker** in the filters covers every country in the data and marks these `too small to plot`.
+
+## Mobile
+
+Two breakpoints (940px / 600px). On phones the globe shrinks to 26vh, the title and CTA stack full-width, filters collapse behind a disclosure so results are visible without scrolling, detail fields switch to label-above-value, and the report form becomes a bottom sheet. Inputs are 16px so iOS doesn't zoom on focus.
 
 Base data © neobankbeat, MIT. This project adds the country-verification layer on top.
 
