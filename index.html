@@ -284,6 +284,7 @@
         <button id="t-match">Find a match</button>
         <button id="t-changes">What changed</button>
         <button id="t-track">Tracking<span class="n" id="trk-n"></span></button>
+        <button id="t-data">Data health<span class="n" id="dh-n"></span></button>
       </nav>
     </div>
 
@@ -327,6 +328,9 @@
 
     <!-- ============ TRACKING ============ -->
     <div class="pane" id="p-track" hidden><div id="track-out"></div></div>
+
+    <!-- ============ DATA HEALTH ============ -->
+    <div class="pane" id="p-data" hidden><div id="data-out"></div></div>
 
     <div id="tray">
       <span class="lbl" id="tray-n">0 selected</span>
@@ -553,6 +557,18 @@ const tracked=()=>LS.get("cov_track",[]);
 const isTracked=(n,c)=>tracked().some(t=>t.provider===n&&t.country===(c||null));
 
 /* ---------------- globe ---------------- */
+/* Too small to render as polygons at 110m, but they carry real listings. */
+const CITY_STATES=[
+  {name:"Singapore",lat:1.35,lng:103.82},{name:"Hong Kong",lat:22.32,lng:114.17},
+  {name:"Malta",lat:35.9,lng:14.5},{name:"Monaco",lat:43.73,lng:7.42},
+  {name:"Gibraltar",lat:36.14,lng:-5.35},{name:"Liechtenstein",lat:47.17,lng:9.52},
+  {name:"Andorra",lat:42.51,lng:1.52},{name:"San Marino",lat:43.94,lng:12.45},
+  {name:"Bahrain",lat:26.07,lng:50.56},{name:"Mauritius",lat:-20.35,lng:57.55},
+  {name:"Barbados",lat:13.19,lng:-59.54},{name:"Cayman Islands",lat:19.31,lng:-81.25},
+  {name:"Isle of Man",lat:54.24,lng:-4.55},{name:"Jersey",lat:49.21,lng:-2.13},
+  {name:"Guernsey",lat:49.47,lng:-2.59},{name:"Seychelles",lat:-4.68,lng:55.49},
+  {name:"Curaçao",lat:12.17,lng:-68.99},{name:"Bermuda",lat:32.31,lng:-64.75}
+];
 function initGlobe(){
   if(typeof Globe!=="function") return;
   globe=Globe({rendererConfig:{antialias:true}})(document.getElementById("globe"))
@@ -563,7 +579,17 @@ function initGlobe(){
       return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
         'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+' — '+c+' confirmed</div>';})
     .onPolygonHover(d=>{hoverName=d?d.properties.name:null;
-      document.getElementById("globe").style.cursor=d?"pointer":"grab";});
+      document.getElementById("globe").style.cursor=d?"pointer":"grab";})
+    /* At 110m resolution these have no polygon, yet several are the biggest
+       hubs in this category. Without markers they are unreachable by clicking. */
+    .pointsData(CITY_STATES).pointLat("lat").pointLng("lng")
+    .pointAltitude(.012).pointRadius(.55).pointColor(d=>worksIn(d.name)?"#16202b":"#8d9bad")
+    .pointLabel(d=>'<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
+      'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(d.name)+' — '+
+      worksIn(d.name)+' confirmed</div>')
+    .onPointHover(d=>{hoverName=d?d.name:hoverName;
+      document.getElementById("globe").style.cursor=d?"pointer":"grab";})
+    .onPointClick(d=>setCountry(d.name));
   let down=null; const g=document.getElementById("globe");
   g.addEventListener("mousedown",e=>down=[e.clientX,e.clientY]);
   g.addEventListener("click",e=>{ if(!hoverName)return;
@@ -589,6 +615,9 @@ function paint(){
     if(!c) return "#c3cfdd";
     return mix("#dfe6ef","#2c3644",.18+.72*(c/max));
   });
+  globe.pointColor(d=>country&&d.name===country?"#2c3644"
+    :worksIn(d.name)?mix("#dfe6ef","#2c3644",.18+.72*(worksIn(d.name)/max)):"#c3cfdd")
+   .pointsData(CITY_STATES);
 }
 function mix(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
   const A=p(a),B=p(b);return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";}
@@ -695,6 +724,7 @@ function render(){
   if(tab==="browse") renderBrowse();
   else if(tab==="match") renderMatch();
   else if(tab==="changes") renderChanges();
+  else if(tab==="data") renderData();
   else renderTrack();
 }
 function scoreOf(p){
@@ -876,6 +906,118 @@ function syncTrack(){
   if(tab==="track") renderTrack();
   if(tab==="browse") renderBrowse();
 }
+/* ---------------- data health ----------------
+   Hand-kept data fails silently and it fails authoritatively:
+   a wrong row still renders a green badge and a citation. These
+   checks run on every load so contradictions surface as errors
+   instead of quietly shipping as facts. */
+function integrity(){
+  const errs=[], warns=[];
+  const names=new Set(ALL.map(p=>p.name));
+  const known=new Set((typeof allCountryNames==="function"?allCountryNames():[]).map(norm));
+  const today=new Date().toISOString().slice(0,10);
+
+  Object.entries(VERIFIED).forEach(([n,v])=>{
+    if(!names.has(n)) errs.push([n,"Row exists but no such product in the directory — it renders nowhere."]);
+    if(v.checked>today) errs.push([n,"Checked date "+v.checked+" is in the future."]);
+    if(!v.source&&!v.nolist) errs.push([n,"No source URL recorded."]);
+    if(!v.nolist&&!(v.list||[]).length) errs.push([n,"Marked as having a list, but the list is empty."]);
+    if(v.mode!=="block"&&v.mode!=="allow"&&!v.nolist)
+      errs.push([n,"No mode set — the app can't tell an allow list from a block list."]);
+    if(v.list&&v.waitlist){
+      const both=v.list.filter(c=>v.waitlist.includes(c));
+      if(both.length) errs.push([n,"Listed as live AND waitlist: "+both.join(", ")]);
+    }
+    if(v.mode==="allow"&&v.usageBlocked){
+      const out=v.usageBlocked.filter(c=>!v.list.includes(c));
+      if(out.length>10) warns.push([n,"Card-usage blocks mostly fall outside the supported list — expected, but check scope."]);
+    }
+    if(v.tier==="official"&&!v.scope) warns.push([n,"Official row with no scope — is this the card or the account?"]);
+    if(ageDays(v.checked)>STALE) warns.push([n,"Not re-checked in "+ageDays(v.checked)+" days."]);
+    (v.list||[]).forEach(c=>{ if(known.size&&!known.has(norm(c))) warns.push([n,"“"+c+"” has no country on the map or picker."]); });
+  });
+  if(typeof UNREACHABLE!=="undefined") Object.entries(UNREACHABLE).forEach(([n,why])=>warns.push([n,why]));
+  return {errs,warns};
+}
+
+function exportData(){
+  const rows=Object.entries(VERIFIED).map(([n,v])=>({
+    product:n, mode:v.mode||null, scope:v.scope||null, tier:v.tier,
+    checked:v.checked, source:v.source||null, countries:v.list||[],
+    waitlist:v.waitlist||null, cardBlocked:v.usageBlocked||null,
+    noPublishedList:!!v.nolist, fee:v.fee||null, note:v.note||null, conflict:v.conflict||null
+  })).sort((a,b)=>a.product.localeCompare(b.product));
+  const blob=new Blob([JSON.stringify({
+    exported:new Date().toISOString(), productsListed:ALL.length,
+    rowsVerified:rows.length, staleAfterDays:STALE,
+    reports:LS.get("cov_reports",[]), tracking:LS.get("cov_track",[]), rows
+  },null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="coverage-"+new Date().toISOString().slice(0,10)+".json";
+  a.click(); URL.revokeObjectURL(a.href); toast("Exported "+rows.length+" verified rows");
+}
+
+function syncHealth(){
+  const {errs}=integrity();
+  const el=document.getElementById("dh-n"); if(!el) return;
+  el.textContent=errs.length?"("+errs.length+")":"";
+  el.style.color=errs.length?"var(--bad)":"";
+  if(errs.length) console.warn("Coverage data errors:",errs);
+}
+function renderData(){
+  const {errs,warns}=integrity();
+  const all=Object.entries(VERIFIED);
+  const tiers={official:0,secondary:0,directory:0};
+  all.forEach(([,v])=>tiers[v.tier]=(tiers[v.tier]||0)+1);
+  const due=all.filter(([,v])=>ageDays(v.checked)>STALE)
+    .sort((a,b)=>ageDays(b[1].checked)-ageDays(a[1].checked));
+  const soon=all.filter(([,v])=>{const d=ageDays(v.checked);return d<=STALE&&d>STALE-45;});
+  const unlisted=ALL.filter(p=>!VERIFIED[p.name]);
+
+  const bar=(label,n,d)=>'<div class="fld"><div class="k">'+label+'</div><div class="v">'+
+    n+' <span class="note">of '+d+' · '+Math.round(n/d*100)+'%</span></div></div>';
+
+  document.getElementById("data-out").innerHTML=
+    '<div class="empty" style="padding-bottom:0;text-align:left">'+
+      'What this list actually rests on. Numbers are counted from the data, not asserted.</div>'+
+    bar("Products listed",ALL.length,ALL.length)+
+    bar("Any country data at all",all.length,ALL.length)+
+    bar("From the company itself",tiers.official||0,ALL.length)+
+    bar("From a third-party directory",tiers.directory||0,ALL.length)+
+    '<div class="fld"><div class="k">Nothing checked</div><div class="v miss">'+unlisted.length+
+      ' products <span class="note">no country answer exists for these</span></div></div>'+
+
+    '<h3 style="margin:var(--s4) 0 var(--s2);font-size:14px;font-weight:500">Contradictions</h3>'+
+    (errs.length
+      ? errs.map(([n,m])=>'<div class="row" style="cursor:default"><span class="rt"><h3>'+esc(n)+
+          '</h3><span class="t no">Error</span></span><p class="why">'+esc(m)+'</p></div>').join("")
+      : '<div class="empty" style="padding:var(--s3) 0">Nothing contradicts itself right now.</div>')+
+
+    '<h3 style="margin:var(--s4) 0 var(--s2);font-size:14px;font-weight:500">Worth a look · '+warns.length+'</h3>'+
+    (warns.length
+      ? warns.slice(0,40).map(([n,m])=>'<div class="row" style="cursor:default"><span class="rt"><h3>'+esc(n)+
+          '</h3><span class="t rev">Check</span></span><p class="why">'+esc(m)+'</p></div>').join("")+
+        (warns.length>40?'<div class="empty">…and '+(warns.length-40)+' more.</div>':'')
+      : '<div class="empty" style="padding:var(--s3) 0">Nothing flagged.</div>')+
+
+    '<h3 style="margin:var(--s4) 0 var(--s2);font-size:14px;font-weight:500">Due for a re-check</h3>'+
+    (due.length||soon.length
+      ? [...due,...soon].map(([n,v])=>{const d=ageDays(v.checked);
+          return '<div class="row" style="cursor:default"><span class="rt"><h3>'+esc(n)+
+          '</h3><span class="t '+(d>STALE?"no":"rev")+'">'+d+' days</span></span>'+
+          '<p class="why">Last read '+esc(v.checked)+
+          (v.source?' · <a href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">open source</a>':'')+
+          '</p></div>';}).join("")
+      : '<div class="empty" style="padding:var(--s3) 0">Everything is inside the '+STALE+'-day window. '+
+        'The oldest row is '+Math.max(...all.map(([,v])=>ageDays(v.checked)))+' days old.</div>')+
+
+    '<div style="margin-top:var(--s4)"><button class="solid" id="d-export">Export everything as JSON</button></div>'+
+    '<div class="empty" style="text-align:left">Takes the verified rows, your reports and your tracking list. '+
+    'Reports and tracking live in this browser only — export is the only way they survive a cache clear.</div>';
+
+  const b=document.getElementById("d-export"); if(b) b.onclick=exportData;
+}
+
 function renderTrack(){
   const t=tracked();
   const out=document.getElementById("track-out");
@@ -1118,7 +1260,8 @@ function toast(m){const t=document.getElementById("toast");t.textContent=m;t.cla
 
 /* ---------------- tabs ---------------- */
 const TABS=[["browse","t-browse","p-browse"],["match","t-match","p-match"],
-  ["changes","t-changes","p-changes"],["track","t-track","p-track"]];
+  ["changes","t-changes","p-changes"],["track","t-track","p-track"],
+  ["data","t-data","p-data"]];
 function setTab(name,silent){
   tab=name;
   TABS.forEach(([n,b,p])=>{
@@ -1151,9 +1294,11 @@ function buildChips(){
 /* ---------------- countries ---------------- */
 function allCountryNames(){
   const s=new Set(feats.map(f=>f.properties.name));
+  CITY_STATES.forEach(c=>s.add(norm(c.name)));
   EU.forEach(c=>s.add(norm(c)));
   ALL.forEach(p=>p._cov.set.forEach(c=>s.add(c)));
-  Object.values(VERIFIED).forEach(v=>v.set.forEach(c=>s.add(c)));
+  Object.values(VERIFIED).forEach(v=>{v.set.forEach(c=>s.add(c));
+    (v.waitSet||new Set()).forEach(c=>s.add(c));});
   return [...s].sort((a,b)=>a.localeCompare(b));
 }
 function fillCountries(){
@@ -1178,7 +1323,7 @@ function ingest(data){
   fillCountries(); buildChips();
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
-  syncCountry(); syncTrack(); setTab(tab,true); paint();
+  syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint();
   const p=q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
   if(!country&&!p) showIntro();
 }
