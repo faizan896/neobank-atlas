@@ -3,221 +3,240 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neobank Atlas — which crypto neobank works in your country</title>
-<meta name="description" content="Verified country availability, on/off-ramps and real FX fees for crypto neobanks and cards. Pick your country and see what actually works — and what will refuse you.">
+<title>Coverage — which fintech products actually work in your country</title>
+<meta name="description" content="Find out which neobanks, cards and wallets work where you live, which ones will turn you down, and what they cost. Checked by hand, with sources and dates.">
+<meta property="og:title" content="Coverage">
+<meta property="og:description" content="Which fintech products actually work in your country.">
 <style>
   :root{
     --brand:#2c3644;
-    --sea:#b3c4d8; --paper:#f7f7f5; --ink:#0a0a0a;
-    /* all of these clear 4.5:1 on --paper */
+    --sea:#b3c4d8; --paper:#f7f7f5; --card:#fff; --ink:#0a0a0a;
     --muted:#5f5f58; --line:#d5d5cf; --rule:#1a1a1a;
-    --warn:#8a5c12; --bad:#96301c; --good:#2c6340;
+    --warn:#8a5c12; --bad:#96301c; --good:#2c6340; --info:#2b4a7a;
+    --s1:6px; --s2:10px; --s3:14px; --s4:20px; --s5:28px;
     --sans:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,sans-serif;
     --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
-    --serif:"Times New Roman",Times,Georgia,serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{font-family:var(--sans);color:var(--ink);background:var(--paper);overflow:hidden;
     -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-  button,input,select,textarea{font-family:inherit;color:inherit}
+  button,input,select,textarea{font-family:inherit;color:inherit;font-size:inherit}
   button{cursor:pointer;background:none;border:none;padding:0;text-align:left}
   a{color:inherit}
   :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
   .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
   .dim{color:var(--muted)}
-  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
   #app{display:flex;height:100%}
 
-  /* ---------------- globe ---------------- */
-  #view{position:relative;flex:1 1 54%;min-width:0;background:var(--sea);overflow:hidden}
+  /* ---------- map ---------- */
+  #view{position:relative;flex:1 1 52%;min-width:0;background:var(--sea);overflow:hidden}
   #globe{position:absolute;inset:0;touch-action:none}
   .stamp{position:absolute;z-index:50;pointer-events:none;font-family:var(--mono);font-size:11px;
-    letter-spacing:.06em;color:#16202b}
-  #s-tl{top:18px;left:20px;line-height:1.7}
-  #s-bl{bottom:18px;left:20px;font-family:var(--sans);font-size:12px;line-height:1.45;max-width:240px;letter-spacing:0}
-  #s-br{bottom:18px;right:20px;text-align:right;line-height:1.7}
+    letter-spacing:.06em;color:#16202b;line-height:1.7}
+  #s-tl{top:18px;left:20px}
+  #s-bl{bottom:18px;left:20px;font-family:var(--sans);font-size:12.5px;line-height:1.5;max-width:260px;letter-spacing:0}
+  #s-br{bottom:18px;right:20px;text-align:right}
   #reset{position:absolute;top:14px;right:16px;z-index:60;border:1px solid var(--rule);background:var(--paper);
-    padding:8px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;display:none}
+    padding:8px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;display:none}
   #reset.on{display:block}
   .scene-nav-info{font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.07em;
-    text-transform:uppercase;color:#16202b!important;opacity:.6;bottom:6px!important}
+    text-transform:uppercase;color:#16202b!important;opacity:.55;bottom:6px!important}
   .scene-tooltip{font-family:var(--mono)!important;color:var(--ink)!important}
 
-  /* ---------------- panel ---------------- */
-  #dir{position:relative;flex:0 0 520px;max-width:48%;background:var(--paper);
+  /* ---------- panel ---------- */
+  #dir{position:relative;flex:0 0 540px;max-width:50%;background:var(--paper);
     border-left:1px solid var(--rule);display:flex;flex-direction:column;min-height:0}
 
-  .head{padding:20px 28px 18px;border-bottom:1px solid var(--rule)}
-  .head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-  .head h1{margin:8px 0 0;font-size:29px;line-height:1.02;letter-spacing:-.018em;font-weight:500;text-transform:uppercase}
-  .cta{background:var(--brand);color:#fff;padding:11px 15px;font-family:var(--mono);font-size:10.5px;
-    letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1.25;text-align:center}
-  .cta:hover{filter:brightness(1.18)}
+  .top{padding:16px var(--s5) 0}
+  .brandrow{display:flex;justify-content:space-between;align-items:center;gap:14px}
+  .brand{font-size:19px;font-weight:500;letter-spacing:-.01em;text-transform:uppercase}
+  .brand b{font-weight:500}
+  .brand span{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted);
+    text-transform:uppercase;margin-left:8px}
 
-  .gapbar{padding:11px 28px;border-bottom:1px solid var(--rule);display:flex;gap:18px}
-  .gapbar div{flex:1}
-  .gapbar b{display:block;font-size:20px;font-weight:500;letter-spacing:-.01em;line-height:1.1}
-  .gapbar span{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
-    color:var(--muted);line-height:1.4;display:block;margin-top:3px}
-  .gapbar .hot b{color:var(--warn)}
+  /* country bar — the primary control */
+  .cbar{margin-top:var(--s3);border:1px solid var(--rule);background:var(--card);display:flex;align-items:stretch}
+  .cbar label{flex:0 0 auto;padding:12px 0 12px 14px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--muted);align-self:center}
+  .cbar select{flex:1;border:none;background:none;padding:13px 14px;font-size:16px;outline:none;
+    -webkit-appearance:none;appearance:none;cursor:pointer}
+  .cbar .chg{flex:0 0 auto;border-left:1px solid var(--line);padding:0 14px;font-family:var(--mono);
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 
-  .filters{padding:14px 28px 16px;border-bottom:1px solid var(--rule)}
-  .uline{width:100%;border:none;border-bottom:1px solid var(--line);background:none;padding:6px 0 8px;
-    font-size:15px;outline:none;margin-bottom:12px;border-radius:0}
-  .uline::placeholder{color:#8b8b83}
-  .uline:focus{border-bottom-color:var(--rule)}
-  #ftoggle{display:none;width:100%;border:1px solid var(--line);padding:12px;
-    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  #ftoggle span{float:right}
-  .tags{display:flex;gap:5px;flex-wrap:wrap}
-  .tag{border:1px solid var(--rule);padding:3px 7px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
-    text-transform:uppercase;line-height:1.3;white-space:nowrap}
-  button.tag{color:var(--muted);border-color:var(--line)}
-  button.tag:hover{color:var(--ink);border-color:var(--muted)}
-  button.tag.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .tag.gap{border-style:dashed;color:var(--warn);border-color:var(--warn)}
-  .tag.ok{background:var(--good);border-color:var(--good);color:#fff}
-  .tag.no{background:var(--bad);border-color:var(--bad);color:#fff}
-  .tag.rep{border-color:var(--good);color:var(--good)}
-  .tag.stale{border-style:dashed;color:var(--warn);border-color:var(--warn)}
-  .frow{margin-top:12px}
-  .frow>.lbl{display:block;margin-bottom:7px;color:var(--muted)}
+  /* answer strip */
+  .answer{margin-top:var(--s3);display:none;gap:1px;background:var(--line);border:1px solid var(--rule)}
+  .answer.on{display:flex}
+  .answer div{flex:1;background:var(--card);padding:10px 12px}
+  .answer b{display:block;font-size:21px;font-weight:500;line-height:1.1}
+  .answer span{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-top:3px;line-height:1.4}
+  .answer .y b{color:var(--good)} .answer .n b{color:var(--bad)} .answer .u b{color:var(--warn)}
 
-  .meta-row{padding:9px 28px;border-bottom:1px solid var(--line);display:flex;
-    justify-content:space-between;gap:10px;align-items:center}
-  .meta-row select{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
-    border:none;background:none;color:var(--muted);outline:none}
+  /* tabs */
+  .tabs{display:flex;gap:2px;margin-top:var(--s3);border-bottom:1px solid var(--rule)}
+  .tabs button{padding:10px 13px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs button:hover{color:var(--ink)}
+  .tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .tabs .n{font-size:9px;color:var(--muted);margin-left:5px}
 
-  #rows{flex:1;overflow-y:auto;min-height:0}
-  .row{display:block;width:100%;padding:14px 28px;border-bottom:1px solid var(--line);cursor:pointer}
+  .pane{flex:1;overflow-y:auto;min-height:0}
+  .pane[hidden]{display:none}
+
+  .bar{padding:var(--s2) var(--s5);border-bottom:1px solid var(--line);display:flex;
+    justify-content:space-between;align-items:center;gap:10px}
+  .bar select{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    border:none;background:none;color:var(--muted);outline:none;cursor:pointer}
+
+  .srch{padding:var(--s3) var(--s5);border-bottom:1px solid var(--line)}
+  .srch input{width:100%;border:1px solid var(--line);background:var(--card);padding:11px 13px;
+    font-size:15px;outline:none;border-radius:0}
+  .srch input:focus{border-color:var(--rule)}
+  .hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);margin-top:8px;line-height:1.6}
+  .hint button{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--brand);
+    text-decoration:underline;text-underline-offset:2px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+  .chip{border:1px solid var(--line);padding:5px 9px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .chip:hover{color:var(--ink);border-color:var(--muted)}
+  .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+  /* rows */
+  .grp{padding:var(--s3) var(--s5) var(--s1);font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--muted);background:var(--paper)}
+  .row{display:block;width:100%;padding:var(--s3) var(--s5);border-bottom:1px solid var(--line);cursor:pointer}
   .row:hover{background:#eeeee7}
-  .row.blocked{opacity:.6}
-  .row.blocked:hover{opacity:1}
-  .rtop{display:flex;gap:12px;align-items:baseline}
-  .row .n{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 26px}
-  .row h3{margin:0;font-size:15px;font-weight:400;text-transform:uppercase;line-height:1.22;flex:1}
-  .rbody{margin-left:38px}
-  .row p{margin:3px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
-  .row p.fee{color:var(--ink)}
-  .row .tags{margin-top:8px}
-  .none{padding:38px 28px;font-size:13px;line-height:1.7;color:var(--muted)}
-  .note-row{padding:14px 28px;font-family:var(--mono);font-size:10px;letter-spacing:.07em;
-    text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+  .row.off{opacity:.62}
+  .row.off:hover{opacity:1}
+  .rt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .row h3{margin:0;font-size:15.5px;font-weight:400;letter-spacing:-.005em;line-height:1.25}
+  .row .why{margin:5px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+  .row .why b{color:var(--ink);font-weight:400}
+  .row .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+  .t{border:1px solid var(--line);padding:2.5px 7px;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:var(--muted)}
+  .t.ok{background:var(--good);border-color:var(--good);color:#fff}
+  .t.no{background:var(--bad);border-color:var(--bad);color:#fff}
+  .t.rev{border-color:var(--warn);color:var(--warn);border-style:dashed}
+  .t.rep{border-color:var(--info);color:var(--info)}
+  .t.trk{border-color:var(--brand);color:var(--brand)}
+  .t.hard{border-color:var(--rule);color:var(--ink)}
 
-  .foot{border-top:1px solid var(--rule);padding:13px 28px;display:flex;justify-content:space-between;align-items:center;gap:14px}
-  .foot .m{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);line-height:1.6;text-transform:uppercase}
-  .foot .m b{display:block;color:var(--ink);font-weight:700;letter-spacing:.1em;margin-bottom:4px}
-  .serif{font-family:var(--serif);font-size:20px;white-space:nowrap;border-bottom:1px solid transparent}
-  .serif:hover{border-bottom-color:var(--ink)}
+  .empty{padding:34px var(--s5);font-size:13.5px;line-height:1.65;color:var(--muted)}
+  .empty b{color:var(--ink);font-weight:400}
+  .empty .solid{margin-top:16px}
+  .skel{padding:var(--s3) var(--s5);border-bottom:1px solid var(--line)}
+  .skel i{display:block;height:11px;background:var(--line);margin-bottom:8px}
+  .skel i:nth-child(1){width:38%} .skel i:nth-child(2){width:66%} .skel i:nth-child(3){width:24%}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .skel{animation:pulse 1.4s ease-in-out infinite}
 
-  /* compare tray */
+  /* intro */
+  .intro{padding:var(--s5) var(--s5) 34px}
+  .intro h2{margin:0 0 var(--s3);font-size:24px;font-weight:500;line-height:1.25;letter-spacing:-.015em}
+  .intro p{margin:0 0 var(--s2);font-size:14.5px;line-height:1.65;max-width:46ch}
+  .intro p.q{color:var(--muted)}
+  .intro .solid{margin-top:var(--s3)}
+  .intro .facts{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;display:flex;gap:22px}
+  .intro .facts div{flex:1}
+  .intro .facts b{display:block;font-size:19px;font-weight:500}
+  .intro .facts span{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-top:3px;line-height:1.4}
+
+  /* match */
+  .mform{padding:var(--s4) var(--s5);border-bottom:1px solid var(--line)}
+  .mform p{margin:0 0 var(--s3);font-size:13.5px;line-height:1.6;color:var(--muted)}
+  .mform .lbl{display:block;margin-bottom:9px;color:var(--muted)}
+
+  /* detail / compare sheets */
+  .sheet{position:absolute;inset:0;background:var(--paper);display:none;flex-direction:column;z-index:80}
+  .sheet.on{display:flex}
+  .dh{padding:var(--s4) var(--s5);border-bottom:1px solid var(--rule);background:var(--brand);color:#fff}
+  .dh .back{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+  .dh .back:hover{color:#fff}
+  .dh h2{margin:12px 0 0;font-size:26px;font-weight:500;letter-spacing:-.018em;line-height:1.1}
+  .dh .sub{margin-top:6px;font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.5}
+  .verdict{padding:var(--s4) var(--s5);border-bottom:1px solid var(--rule);background:var(--card)}
+  .verdict b{display:block;font-size:19px;font-weight:500;line-height:1.3}
+  .verdict p{margin:7px 0 0;font-size:13px;line-height:1.6;color:var(--muted)}
+  .verdict .tags{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+  .fld{padding:var(--s3) var(--s5);border-bottom:1px solid var(--line);display:grid;
+    grid-template-columns:132px 1fr;gap:16px;align-items:start}
+  .fld .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:2px}
+  .fld .v{font-size:13.5px;line-height:1.6}
+  .fld .v.miss{color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+  .cl{display:flex;flex-wrap:wrap;gap:5px}
+  .cl button{border:1px solid var(--line);padding:3px 7px;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.05em;text-transform:uppercase}
+  .cl button:hover{border-color:var(--brand);color:var(--brand)}
+  .note{font-size:12px;line-height:1.55;color:var(--muted);margin-top:7px}
+  .acts2{padding:var(--s4) var(--s5) 32px;display:flex;gap:12px;flex-wrap:wrap}
+
+  table.cmp{width:100%;border-collapse:collapse;font-size:13px}
+  table.cmp th,table.cmp td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}
+  table.cmp th{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);width:104px}
+  table.cmp td.nm{font-size:14.5px}
+
+  /* tray */
   #tray{display:none;border-top:1px solid var(--rule);background:var(--brand);color:#fff;
-    padding:11px 28px;justify-content:space-between;align-items:center;gap:12px}
+    padding:11px var(--s5);justify-content:space-between;align-items:center;gap:12px}
   #tray.on{display:flex}
   #tray .lbl{color:rgba(255,255,255,.85)}
   #tray button{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff}
   #tray .go{border:1px solid #fff;padding:8px 14px}
 
-  /* overlays */
-  .sheet{position:absolute;inset:0;background:var(--paper);display:none;flex-direction:column;z-index:80}
-  .sheet.on{display:flex}
-  .dhead{padding:20px 28px 18px;border-bottom:1px solid var(--rule);background:var(--brand);color:#fff}
-  .dhead .lbl{color:rgba(255,255,255,.78)}
-  .dhead h2{margin:8px 0 0;font-size:26px;font-weight:500;text-transform:uppercase;letter-spacing:-.015em;line-height:1.05}
-  .dhead .sub{margin-top:7px;font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.5}
-  .back{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.85)}
-  .back:hover{color:#fff}
-  .dbody{flex:1;overflow-y:auto;min-height:0}
-  .fld{padding:14px 28px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:126px 1fr;gap:14px;align-items:start}
-  .fld .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:2px}
-  .fld .v{font-size:13.5px;line-height:1.55}
-  .fld .v.miss{color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase}
-  .cl{display:flex;flex-wrap:wrap;gap:5px}
-  .cl button{border:1px solid var(--line);padding:3px 7px;font-family:var(--mono);font-size:10px;
-    letter-spacing:.05em;text-transform:uppercase}
-  .cl button:hover{border-color:var(--brand);color:var(--brand)}
-  .cl.no button{border-color:var(--bad);color:var(--bad)}
-  .note{font-size:12px;line-height:1.55;color:var(--muted);margin-top:7px}
-  .verifybox{margin:16px 28px 26px;border:1px solid var(--rule);padding:16px 18px}
-  .verifybox p{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
-  .verifybox .solid{margin-top:14px}
+  .solid{background:var(--brand);color:#fff;padding:12px 20px;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;display:inline-block}
+  .solid:hover{filter:brightness(1.18)}
+  .ghost{border:1px solid var(--line);padding:12px 20px;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .ghost:hover{color:var(--ink);border-color:var(--muted)}
 
-  /* compare table */
-  .ctable{width:100%;border-collapse:collapse;font-size:12.5px}
-  .ctable th,.ctable td{border-bottom:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}
-  .ctable th{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);width:110px}
-  .ctable td{width:auto}
-  .ctable .nm{font-size:14px;text-transform:uppercase}
-
-  /* modal */
-  .ov{position:fixed;inset:0;background:rgba(22,32,43,.5);display:none;align-items:center;justify-content:center;z-index:9000;padding:22px}
+  .ov{position:fixed;inset:0;background:rgba(22,32,43,.5);display:none;align-items:center;
+    justify-content:center;z-index:9000;padding:22px}
   .ov.show{display:flex}
   .modal{background:var(--paper);border:1px solid var(--rule);width:100%;max-width:520px;max-height:88vh;overflow-y:auto}
-  .mh{padding:20px 28px 16px;border-bottom:1px solid var(--rule)}
-  .mh h2{margin:8px 0 0;font-size:24px;font-weight:500;text-transform:uppercase;letter-spacing:-.012em;line-height:1.06}
-  .mb{padding:18px 28px 22px}
-  .mb label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;margin:15px 0 6px}
+  .mh{padding:var(--s4) var(--s5) var(--s3);border-bottom:1px solid var(--rule)}
+  .mh h2{margin:8px 0 0;font-size:22px;font-weight:500;letter-spacing:-.012em;line-height:1.15}
+  .mb{padding:var(--s4) var(--s5)}
+  .mb label{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;font-weight:700;margin:var(--s3) 0 7px}
   .mb label:first-child{margin-top:0}
-  .mb select,.mb textarea{width:100%;border:none;border-bottom:1px solid var(--line);background:none;
-    padding:6px 0 8px;font-size:15px;outline:none;border-radius:0}
-  .mb textarea{border:1px solid var(--line);padding:10px 11px;font-size:13.5px;min-height:72px;resize:vertical}
-  .two{display:flex;gap:18px}.two>div{flex:1}
-  .err{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--bad);margin-top:12px;display:none}
-  .acts{display:flex;gap:22px;justify-content:flex-end;align-items:center;margin-top:22px}
-  .ghost{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-  .ghost:hover{color:var(--ink)}
-  .solid{background:var(--brand);color:#fff;padding:12px 22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase}
-  .solid:hover{filter:brightness(1.18)}
+  .mb select,.mb textarea,.mb input{width:100%;border:1px solid var(--line);background:var(--card);
+    padding:10px 12px;font-size:15px;outline:none;border-radius:0}
+  .mb textarea{min-height:76px;resize:vertical;font-size:14px}
+  .acts{display:flex;gap:18px;justify-content:flex-end;align-items:center;margin-top:var(--s4)}
+  .err{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--bad);margin-top:12px;display:none}
   .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);
     color:var(--paper);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
     padding:13px 20px;z-index:9500;opacity:0;transition:.28s}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ---------------- tablet ---------------- */
-  @media(max-width:940px){
+  @media(max-width:960px){
     #app{flex-direction:column}
-    #view{flex:0 0 38vh;min-height:230px}
+    #view{flex:0 0 30vh;min-height:190px}
     #dir{flex:1 1 auto;max-width:none;border-left:none;border-top:1px solid var(--rule)}
     #s-bl{display:none}
-    .head h1{font-size:24px}
-    .head,.filters,.meta-row,.foot,.row,.gapbar,.note-row,.none,.fld,.mh,.mb,#tray{padding-left:20px;padding-right:20px}
-    .verifybox{margin-left:20px;margin-right:20px}
+    :root{--s5:18px}
   }
-  /* ---------------- phone ---------------- */
   @media(max-width:600px){
-    #view{flex:0 0 26vh;min-height:168px}
-    #reset{top:12px;right:12px}
-    #ftoggle{display:block;margin-top:2px}
-    #advf{display:none;margin-top:14px}
-    #dir.filters-open #advf{display:block}
-    .head{padding:16px 16px 14px}
-    .head-top{flex-direction:column;align-items:stretch;gap:12px}
-    .head h1{font-size:25px;margin-top:5px}
-    .cta{width:100%}
-    .gapbar{padding:10px 16px;gap:9px}
-    .gapbar b{font-size:16px}
-    .gapbar span{font-size:8.5px;letter-spacing:.04em}
-    .filters{padding:14px 16px 16px}
-    .uline,.mb select,.mb textarea{font-size:16px}
-    .meta-row{padding:9px 16px}
-    .row{padding:14px 16px}
-    .rbody{margin-left:0;margin-top:4px}
-    .none,.note-row{padding:26px 16px}
-    .dhead{padding:18px 16px 16px}.dhead h2{font-size:23px}
-    .fld{grid-template-columns:1fr;gap:6px;padding:13px 16px}
+    #view{flex:0 0 22vh;min-height:150px}
+    .brand{font-size:17px}
+    .answer b{font-size:18px}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .tabs button{padding:10px;white-space:nowrap}
+    .fld{grid-template-columns:1fr;gap:5px}
     .fld .k{padding-top:0}
-    .verifybox{margin:14px 16px 22px;padding:14px 16px}
-    .foot{padding:12px 16px}.serif{font-size:18px}
-    .ctable th{width:96px}
+    .intro h2{font-size:21px}
     .ov{padding:0;align-items:flex-end}
-    .modal{max-width:none;max-height:94vh;border-left:none;border-right:none;border-bottom:none}
-    .mh{padding:18px 16px 14px}.mb{padding:16px 16px 22px}
-    .two{flex-direction:column;gap:0}
-    .solid{padding:14px 20px}
+    .modal{max-width:none;max-height:94vh;border:none;border-top:1px solid var(--rule)}
+    table.cmp th{width:88px}
   }
-  @media(max-width:600px) and (orientation:landscape){ #view{flex:0 0 46vh;min-height:0} }
 </style>
 </head>
 <body>
@@ -225,63 +244,79 @@
 
   <section id="view">
     <div id="globe"></div>
-    <div class="stamp" id="s-tl">NEOBANK_ATLAS_V1.0<br><span id="s-scope">GLOBAL VIEW</span></div>
-    <div class="stamp" id="s-bl">Every provider claims to be global. Almost none tell you where they actually work.</div>
-    <div class="stamp" id="s-br"><span id="s-count">····</span></div>
-    <button id="reset">← Global view</button>
+    <div class="stamp" id="s-tl">COVERAGE<br><span id="s-scope">PICK A COUNTRY</span></div>
+    <div class="stamp" id="s-bl">Darker countries have more products that are confirmed to work there.</div>
+    <div class="stamp" id="s-br"><span id="s-count"></span></div>
+    <button id="reset">Show the whole world</button>
   </section>
 
   <aside id="dir">
-    <div class="head">
-      <div class="head-top">
-        <div>
-          <span class="lbl">Crypto_Neobanks · By_Country</span>
-          <h1>Neobank<br>Atlas</h1>
-        </div>
-        <button class="cta" id="open-top">+ Report<br>what worked</button>
+    <div class="top">
+      <div class="brandrow">
+        <div class="brand">Cover<b>age</b><span id="ver">48 of 114 checked</span></div>
+        <button class="chip" id="report-any">Report bad data</button>
       </div>
-    </div>
 
-    <div class="gapbar">
-      <div><b id="g1">—</b><span>have any country data</span></div>
-      <div><b id="g2">—</b><span>list on/off-ramps</span></div>
-      <div><b id="g3">—</b><span>publish real FX fees</span></div>
-      <div class="hot"><b id="g4">—</b><span>verified by hand</span></div>
-    </div>
-
-    <div class="filters">
-      <label class="sr" for="q">Search providers</label>
-      <input class="uline" id="q" placeholder="Search provider…" autocomplete="off">
-      <button id="ftoggle" aria-expanded="false" aria-controls="advf">Filters &amp; country <span>+</span></button>
-      <div id="advf">
-        <div class="tags" id="cats"></div>
-        <div class="frow">
-          <span class="lbl">Must support</span>
-          <div class="tags" id="svcs"></div>
-        </div>
-        <div class="frow">
-          <label class="lbl" for="pick">Or pick a country</label>
-          <select class="uline" id="pick" style="margin-bottom:0">
-            <option value="">Every country…</option>
-          </select>
-        </div>
+      <div class="cbar">
+        <label for="pick">Country</label>
+        <select id="pick"><option value="">Choose where you live…</option></select>
+        <button class="chg" id="clear-c" hidden>Clear</button>
       </div>
+
+      <div class="answer" id="answer">
+        <div class="y"><b id="a-y">—</b><span>work here</span></div>
+        <div class="n"><b id="a-n">—</b><span>will turn you down</span></div>
+        <div class="u"><b id="a-u">—</b><span>nobody has checked</span></div>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button id="t-browse" class="on">Products</button>
+        <button id="t-match">Find a match</button>
+        <button id="t-changes">What changed</button>
+        <button id="t-track">Tracking<span class="n" id="trk-n"></span></button>
+      </nav>
     </div>
 
-    <div class="meta-row">
-      <span class="lbl dim" id="count">Loading…</span>
-      <div>
-        <label class="sr" for="sort">Sort</label>
-        <select id="sort">
-          <option value="relevance">Sort · relevance</option>
-          <option value="name">Sort · name</option>
-          <option value="verified">Sort · verified first</option>
-          <option value="reach">Sort · widest reach</option>
+    <!-- ============ BROWSE ============ -->
+    <div class="pane" id="p-browse">
+      <div class="srch">
+        <label class="sr" for="q">Search</label>
+        <input id="q" placeholder="Try: virtual cards in Pakistan" autocomplete="off">
+        <div class="hint">
+          Try
+          <button data-eg="virtual cards in Pakistan">virtual cards in Pakistan</button> ·
+          <button data-eg="crypto cards Germany">crypto cards Germany</button> ·
+          <button data-eg="self custody wallets">self custody wallets</button>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="bar">
+        <span class="lbl dim" id="count">Loading…</span>
+        <select id="sort" aria-label="Sort">
+          <option value="best">Sort · best first</option>
+          <option value="name">Sort · A to Z</option>
+          <option value="reach">Sort · works in most countries</option>
+          <option value="checked">Sort · recently checked</option>
         </select>
       </div>
+      <div id="rows"></div>
     </div>
 
-    <div id="rows" role="list"></div>
+    <!-- ============ MATCH ============ -->
+    <div class="pane" id="p-match" hidden>
+      <div class="mform">
+        <p>Tell it what you need. It only matches on things the data actually records — no guessing.</p>
+        <span class="lbl">I'm looking for</span>
+        <div class="chips" id="needs"></div>
+      </div>
+      <div id="match-out"></div>
+    </div>
+
+    <!-- ============ CHANGES ============ -->
+    <div class="pane" id="p-changes" hidden><div id="changes-out"></div></div>
+
+    <!-- ============ TRACKING ============ -->
+    <div class="pane" id="p-track" hidden><div id="track-out"></div></div>
 
     <div id="tray">
       <span class="lbl" id="tray-n">0 selected</span>
@@ -291,93 +326,54 @@
       </div>
     </div>
 
-    <div class="foot">
-      <div class="m">
-        <b>Data_Gaps</b>
-        Base: neobankbeat (MIT)<br>Country layer: verified here
-      </div>
-      <button class="serif" id="open-foot">Add a report</button>
-    </div>
-
     <!-- detail -->
     <div id="detail" class="sheet">
-      <div class="dhead">
-        <button class="back" id="back">← All providers</button>
-        <span class="lbl" style="display:block;margin-top:12px" id="d-cat"></span>
+      <div class="dh">
+        <button class="back" id="back">← Back to list</button>
         <h2 id="d-name"></h2>
         <div class="sub" id="d-sub"></div>
       </div>
-      <div class="dbody" id="d-body"></div>
+      <div class="pane" id="d-body"></div>
     </div>
 
     <!-- compare -->
     <div id="compare" class="sheet">
-      <div class="dhead">
-        <button class="back" id="cback">← Back</button>
-        <span class="lbl" style="display:block;margin-top:12px">Side_By_Side</span>
+      <div class="dh">
+        <button class="back" id="cback">← Back to list</button>
         <h2 id="c-title">Compare</h2>
         <div class="sub" id="c-sub"></div>
       </div>
-      <div class="dbody" id="c-body"></div>
+      <div class="pane" id="c-body"></div>
     </div>
   </aside>
-</div>
-
-<!-- country-first onboarding -->
-<div class="ov" id="onb">
-  <div class="modal">
-    <div class="mh">
-      <span class="lbl">Start_Here</span>
-      <h2>Where are<br>you?</h2>
-    </div>
-    <div class="mb">
-      <p class="note" style="margin-top:0">Almost every provider here says “global”. Very few mean it. Pick your country and the list will show what is verified, what is only claimed, and what will refuse you outright.</p>
-      <label for="onb-c">Country</label>
-      <select class="uline" id="onb-c"></select>
-      <div class="acts">
-        <button class="ghost" id="onb-skip">Browse the world instead</button>
-        <button class="solid" id="onb-go">Show me what works</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- report -->
 <div class="ov" id="ov">
   <div class="modal">
-    <div class="mh">
-      <span class="lbl">Community_Report</span>
-      <h2>What actually<br>happened?</h2>
-    </div>
+    <div class="mh"><span class="lbl dim">Report</span><h2 id="r-title">Is this wrong?</h2></div>
     <div class="mb">
-      <div class="two">
-        <div>
-          <label for="f-prov">Provider *</label>
-          <select class="uline" id="f-prov"></select>
-        </div>
-        <div>
-          <label for="f-ctry">Your country *</label>
-          <select class="uline" id="f-ctry"></select>
-        </div>
-      </div>
-      <label for="f-out">Outcome *</label>
-      <select class="uline" id="f-out">
-        <option value="signup_ok">Signed up fine</option>
-        <option value="kyc_reject">KYC rejected my country</option>
-        <option value="card_ok">Card arrived / works</option>
-        <option value="onramp_ok">On-ramp worked (local bank → app)</option>
-        <option value="offramp_ok">Off-ramp worked (app → local bank)</option>
-        <option value="offramp_no">Off-ramp not available here</option>
-        <option value="fee_diff">Fees differ from advertised</option>
-        <option value="blocked">Blocked / not available at all</option>
+      <label for="f-prov">Product</label>
+      <select id="f-prov"></select>
+      <label for="f-ctry">Country</label>
+      <select id="f-ctry"></select>
+      <label for="f-out">What happened</label>
+      <select id="f-out">
+        <option value="works">It works here — I use it</option>
+        <option value="blocked">It refused my country at signup</option>
+        <option value="kyc">KYC rejected my documents</option>
+        <option value="card_no">Card not offered here</option>
+        <option value="fee_diff">Fees were different to what's listed</option>
+        <option value="gone">It used to work, not any more</option>
+        <option value="other">Something else is wrong</option>
       </select>
-      <label for="f-note">Details (optional)</label>
-      <textarea id="f-note" placeholder="e.g. PK passport accepted, but off-ramp only via a third party. Real FX was ~1.4%, not 0%."></textarea>
+      <label for="f-note">Anything useful to add</label>
+      <textarea id="f-note" placeholder="e.g. Signed up with a PK passport in June. Card arrived. Real FX was about 1.4%, not 0%."></textarea>
       <div class="err" id="err"></div>
-      <p class="note">Prototype: reports are stored in this browser only. Backend in <code>ROADMAP.md</code>.</p>
+      <p class="note">Saved in this browser for now. Sending these anywhere needs a backend — that's in <code>ROADMAP.md</code>.</p>
       <div class="acts">
         <button class="ghost" id="cancel">Cancel</button>
-        <button class="solid" id="submit">Submit report</button>
+        <button class="solid" id="submit">Send report</button>
       </div>
     </div>
   </div>
@@ -389,402 +385,514 @@
 <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
 <script src="verified.js"></script>
 <script>
-/* ==================== constants ==================== */
-const EU = ["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland",
-  "France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta",
-  "Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"];
+/* ============================================================
+   Coverage — data layer notes
+   Base directory: neobankbeat (MIT). Country availability,
+   fees and sources: verified.js, checked by hand.
+   Nothing here is inferred. Where a field is empty it says so.
+   ============================================================ */
 
-/* dataset / research name  ->  world-atlas name */
-const ALIAS = {
-  "United States":"United States of America", "UAE":"United Arab Emirates",
-  "Türkiye":"Turkey", "Czech Republic":"Czechia", "DR Congo":"Dem. Rep. Congo",
-  "Dominican Republic":"Dominican Rep.", "Bosnia":"Bosnia and Herz.",
-  "South Sudan":"S. Sudan", "Central African Republic":"Central African Rep."
+const EU=["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland",
+ "France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta",
+ "Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"];
+const ALIAS={"United States":"United States of America","UAE":"United Arab Emirates","Türkiye":"Turkey",
+ "Czech Republic":"Czechia","DR Congo":"Dem. Rep. Congo","Dominican Republic":"Dominican Rep.",
+ "South Sudan":"S. Sudan","Central African Republic":"Central African Rep.","Bosnia and Herzegovina":"Bosnia and Herz.",
+ "Democratic Republic of the Congo":"Dem. Rep. Congo"};
+const norm=n=>ALIAS[n]||n;
+const STALE=180;
+
+/* real, cited events — no invented history */
+const CHANGES=[
+ {d:"2026-07-29",p:null,t:"48 products checked against a structured country matrix",
+  s:"Coverage",u:"https://www.cryptocardhub.com/cards"},
+ {d:"2025-12",p:"Tangem",t:"Tangem Pay launched — spend self-custodied USDC on a Visa",
+  s:"Provider note",u:"https://tangem.com"},
+ {d:"2025-09",p:"Lava",t:"Dropped self-custodial DLC loans for cold-storage custody",
+  s:"Provider note",u:"https://lava.xyz"},
+ {d:"2025-06",p:"Coinbase Card",t:"MiCA licence via Luxembourg — one authorisation across 27 EU states",
+  s:"Issuer",u:"https://www.coinbase.com/card"},
+ {d:"2025-02",p:"Infini",t:"Rebuilt after a $49M private-key exploit",
+  s:"Provider note",u:"https://infini.money"},
+ {d:"2025-01",p:"Bybit Card",t:"Card services suspended in France",
+  s:"Issuer",u:"https://www.bybit.com/en/help-center/article/FAQ--Changes-to-Bybit-Card-Services-in-the-EEA--CH"}
+];
+
+/* ---------------- state ---------------- */
+let ALL=[],VIEW=[],country=null,selected=null,globe=null,feats=[],hoverName=null;
+let tab="browse",sortMode="best",cmp=new Set(),qParsed={text:"",filters:new Set()};
+let activeChips=new Set(),needs=new Set(),loadState="loading";
+
+const LS={
+  get(k,f){ try{const v=JSON.parse(localStorage.getItem(k)); return v==null?f:v;}catch(e){return f;} },
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
 };
-const norm = n => ALIAS[n] || n;
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ageDays=d=>Math.floor((Date.now()-new Date(d).getTime())/864e5);
 
-const BRAND = {
-  "Revolut":"#191c1f","Cash App":"#00a63f","Venmo":"#0074d4","Robinhood":"#04893c","Crypto.com":"#103f68",
-  "Coinbase Card":"#0052ff","Binance Card":"#c99400","Bybit Card":"#b57700","OKX Card":"#1c1c1e",
-  "Bitget Card":"#00808c","KuCard":"#1d7a5e","Bitpanda":"#4b5cc4","eToro Money":"#2f7f38",
-  "Nexo":"#1a4bff","Wirex":"#b0005f","Uphold":"#2f8c48","Krak":"#5a24c4","KAST":"#1f1f1f",
-  "RedotPay":"#c0341f","Xapo Bank":"#0e3b2e","Strike":"#b56a12","Fold":"#b56a12","Lava":"#c43a14",
-  "COCA":"#0b0b0b","Brighty":"#8a5c12","Plasma One":"#00795a","EtherFi Cash":"#4a3aff","Karta":"#111111",
-  "Hyperbeat":"#007a68","MetaMask":"#c26214","Phantom":"#5a4fd0","Solflare":"#c4551b","Rainbow":"#001e59",
-  "Trust Wallet":"#0500ff","Exodus":"#1d1f2b","Zengo":"#0a2540","Gnosis Pay":"#133629","Tangem":"#0b0b0b",
-  "Mercado Pago":"#0071a8","Lemon":"#00873a","Bitso":"#2d5be3","DolarApp":"#0f172a","Airtm":"#1e63e9",
-  "Chipper Cash":"#1a1a1a","Yellow Card":"#8a6b00","Deel":"#1b1b1b","Flex":"#111111","MiniPay":"#1f7a4a",
-  "Sling Money":"#111111","Deblock":"#1c1c1c","Fiat24":"#0a2b4e","Stables":"#111111","Ready":"#111111",
-  "Payy":"#111111","Daimo":"#1f6feb","Veera":"#0f172a","Kontigo":"#0b6bcb","Oobit":"#111111",
-  "Bleap":"#5a24c4","Bitget Wallet":"#00707c","Moto":"#111111","Bitnob":"#b56a12","Onboard":"#111111"
-};
-const hashColor = s => { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0;
-  return "hsl("+(Math.abs(h)%360)+" 44% 27%)"; };
-const brandOf = p => BRAND[p.name] || hashColor(p.name||"x");
+const VERIFIED={};
+if(typeof VERIFIED_RAW!=="undefined")
+  Object.entries(VERIFIED_RAW).forEach(([k,v])=>VERIFIED[k]=Object.assign({},v,{set:new Set((v.list||[]).map(norm))}));
 
-const SERVICES = ["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"];
-const OUTCOME_LABEL = { signup_ok:"Signup OK", kyc_reject:"KYC rejected", card_ok:"Card works",
-  onramp_ok:"On-ramp OK", offramp_ok:"Off-ramp OK", offramp_no:"No off-ramp",
-  fee_diff:"Fees differ", blocked:"Blocked" };
-const STALE_DAYS = 180;
-
-/* normalise the verified layer's country names once */
-const VERIFIED = {};
-if(typeof VERIFIED_RAW !== "undefined"){
-  Object.entries(VERIFIED_RAW).forEach(([k,v])=>{
-    VERIFIED[k] = Object.assign({}, v, {set:new Set((v.list||[]).map(norm))});
-  });
-}
-const ageDays = d => Math.floor((Date.now()-new Date(d).getTime())/864e5);
-
-const FALLBACK = {entities:[
- {name:"Revolut",category:"hybrid",hq:"London, UK",domain:"revolut.com",website:"https://revolut.com",card_network:"Visa/MC",card_type:"Debit + credit",custody:"Custodial",countries:["United Kingdom","Ireland","France","Germany","Spain","Italy","Poland","United States","Australia","Singapore","Japan","Brazil","Mexico","India"],services:["on-ramp","off-ramp","iban","multi-currency","virtual-cards","crypto-cards"],fx_markup:{markup:"Interbank; free to £/$1,000/mo weekdays, 0.5% over; +1% weekend",as_of:"2026-07"}},
- {name:"RedotPay",category:"hybrid",hq:"Hong Kong, HK",domain:"redotpay.com",website:"https://redotpay.com",card_network:"Visa/MC",card_type:"Prepaid",custody:"Custodial",countries:["Hong Kong","Singapore","Brazil","Argentina","Nigeria","Global"]},
- {name:"KAST",category:"hybrid",hq:"Hong Kong, HK",domain:"kast.xyz",website:"https://kast.xyz",card_network:"Visa",card_type:"Prepaid (tiers)",custody:"Custodial",countries:["Hong Kong","Singapore","Global"]},
- {name:"Plasma One",category:"web3-native",hq:"—",domain:"plasma.to",website:"https://plasma.to",card_network:"Visa",card_type:"Virtual + physical",custody:"Self-custodial",countries:["Global"]},
- {name:"EtherFi Cash",category:"web3-native",hq:"Miami, US",domain:"ether.fi",website:"https://ether.fi",card_network:"Visa",card_type:"Virtual + physical",custody:"Self-custodial",countries:["Global"]}
-]};
-
-/* ==================== state ==================== */
-let ALL=[], VIEW=[], country=null, selected=null, globe=null, feats=[], hoverName=null;
-let activeCats=new Set(), activeSvcs=new Set(), verifiedOnly=false, queueOnly=false;
-let sortMode="relevance", cmp=new Set(), maxCount=1;
-
-const store = {
-  read(){ try{ const v=JSON.parse(localStorage.getItem("atlas_reports")||"[]"); return Array.isArray(v)?v:[]; }catch(e){ return []; } },
-  write(v){ try{ localStorage.setItem("atlas_reports", JSON.stringify(v)); }catch(e){} }
-};
-const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
+/* ---------------- derived attributes (only from real fields) ---------------- */
 function coverage(p){
   const out=new Set(); let global=false;
   (p.countries||[]).forEach(c=>{
-    if(c==="Global"){ global=true; return; }
-    if(c==="European Union"||c==="EEA"){ EU.forEach(x=>out.add(norm(x))); return; }
+    if(c==="Global"){global=true;return;}
+    if(c==="European Union"||c==="EEA"){EU.forEach(x=>out.add(norm(x)));return;}
     out.add(norm(c));
   });
-  return {set:out, global};
+  return {set:out,global};
 }
-function reportsFor(name, ctry){
-  return store.read().filter(r=>r.provider===name && (!ctry || r.country===ctry));
+const has=(s,w)=>String(s||"").toLowerCase().includes(w);
+function attrs(p){
+  const ct=p.card_type||"", sv=p.services||[];
+  return {
+    card:      !!p.card_network,
+    virtual:   has(ct,"virtual")||sv.includes("virtual-cards"),
+    physical:  has(ct,"physical")||has(ct,"metal")||has(ct,"debit")||has(ct,"credit")||has(ct,"prepaid"),
+    cryptocard:sv.includes("crypto-cards")||(!!p.card_network&&p.stablecoins),
+    iban:      sv.includes("iban"),
+    multicur:  sv.includes("multi-currency"),
+    transfers: sv.includes("fiat-payout")||sv.includes("off-ramp")||sv.includes("multi-currency"),
+    selfcust:  has(p.custody,"self")||has(p.custody,"mpc"),
+    nokyc:     p.kyc==="No",
+    stables:   !!p.stablecoins,
+    cashback:  !!p.cashback,
+    yield:     !!p.yield
+  };
 }
-function gapsOf(p){
-  const g=[];
-  if(!(p.countries||[]).length) g.push("Countries");
-  if(!(p.services||[]).length) g.push("Ramps");
-  if(!p.fx_markup) g.push("Fees");
-  return g;
+function typeOf(p){
+  const a=p._a;
+  if(a.card) return "Card";
+  if(a.selfcust) return "Wallet";
+  if(a.iban||a.multicur) return "Account";
+  return "App";
 }
-/* status of a provider in a country */
-function statusIn(p, ctry){
-  const v = VERIFIED[p.name];
-  if(!ctry) return v ? "verified" : (p._cov.set.size ? "listed" : (p._cov.global ? "claim" : null));
-  if(v) return v.mode==="block" ? (v.set.has(ctry) ? "blocked" : "verified")
-                                : (v.set.has(ctry) ? "verified" : "blocked");
-  if(p._cov.set.has(ctry)) return "listed";
+/* status of a product for a country */
+function statusIn(p,c){
+  const v=VERIFIED[p.name];
+  if(!c) return v?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
+  if(v) return v.set.has(c)?"verified":"blocked";
+  if(p._cov.set.has(c)) return "listed";
   if(p._cov.global) return "claim";
   return null;
 }
-const STATUS_TAG = {
-  verified:'<span class="tag ok">Verified</span>',
-  blocked :'<span class="tag no">Not available here</span>',
-  listed  :'<span class="tag">Listed</span>',
-  claim   :'<span class="tag">Global claim · unchecked</span>'
-};
-function feeOf(p){
-  const v = VERIFIED[p.name];
-  if(v && v.fee) return v.fee;
-  if(p.fx_markup) return p.fx_markup.markup;
-  return null;
+/* verification state, independent of country */
+function vstate(p){
+  const v=VERIFIED[p.name];
+  if(reportsFor(p.name).length) return "reported";
+  if(!v) return "unchecked";
+  if(ageDays(v.checked)>STALE) return "stale";
+  return "verified";
 }
+const VTAG={verified:'<span class="t ok">Verified</span>',
+  stale:'<span class="t rev">Possibly outdated</span>',
+  reported:'<span class="t rep">Reported</span>',
+  unchecked:'<span class="t rev">Needs checking</span>'};
 
-/* ==================== URL state ==================== */
-function writeURL(push){
-  const q = new URLSearchParams();
-  if(country) q.set("c", country);
-  if(selected) q.set("p", selected.name);
-  const url = location.pathname + (q.toString() ? "?"+q : "");
-  if(url === location.pathname+location.search) return;
-  push ? history.pushState({}, "", url) : history.replaceState({}, "", url);
-}
-function readURL(){
-  const q = new URLSearchParams(location.search);
-  const c = q.get("c"), p = q.get("p");
-  if(c) selectCountry(c, true, true);
-  if(p){ const prov = ALL.find(x=>x.name===p); if(prov) openDetail(prov, true); }
-  return !!(c||p);
-}
-window.addEventListener("popstate", () => {
-  const q = new URLSearchParams(location.search);
-  const c = q.get("c") || null, p = q.get("p");
-  country = c;
-  document.getElementById("reset").classList.toggle("on", !!country);
-  document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
-  const pk = document.getElementById("pick"); if(pk) pk.value = country || "";
-  if(p){ const prov = ALL.find(x=>x.name===p); if(prov){ openDetail(prov, true); return; } }
-  closeSheets(true);
-  paint(); renderList();
-});
+const reportsFor=(n,c)=>LS.get("cov_reports",[]).filter(r=>r.provider===n&&(!c||r.country===c));
+const tracked=()=>LS.get("cov_track",[]);
+const isTracked=(n,c)=>tracked().some(t=>t.provider===n&&t.country===(c||null));
 
-/* ==================== globe ==================== */
+/* ---------------- globe ---------------- */
 function initGlobe(){
-  if(typeof Globe !== "function") return;
-  globe = Globe({rendererConfig:{antialias:true}})(document.getElementById("globe"))
-    .backgroundColor("#b3c4d8")
-    .showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
-    .showGraticules(true)
-    .polygonAltitude(.01)
-    .polygonSideColor(()=> "rgba(110,132,160,.28)")
-    .polygonStrokeColor(()=> "#6b7f96")
-    .polygonLabel(d => {
-      const n=d.properties.name, c=countryCount(n);
+  if(typeof Globe!=="function") return;
+  globe=Globe({rendererConfig:{antialias:true}})(document.getElementById("globe"))
+    .backgroundColor("#b3c4d8").showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
+    .showGraticules(true).polygonAltitude(.01)
+    .polygonSideColor(()=>"rgba(110,132,160,.28)").polygonStrokeColor(()=>"#6b7f96")
+    .polygonLabel(d=>{const n=d.properties.name,c=worksIn(n);
       return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
-        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#0a0a0a">'+
-        esc(n)+' — '+c+' provider'+(c===1?'':'s')+'</div>';
-    })
-    /* globe.gl's own click detection is unreliable over the canvas, so
-       selection runs off the hover raycast with a drag guard. */
-    .onPolygonHover(d => { hoverName = d ? d.properties.name : null;
-      document.getElementById("globe").style.cursor = d ? "pointer" : "grab"; });
-
-  let downAt=null;
-  const gel=document.getElementById("globe");
-  gel.addEventListener("mousedown", e => { downAt=[e.clientX,e.clientY]; });
-  gel.addEventListener("click", e => {
-    if(!hoverName) return;
-    const moved = downAt ? Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]) : 0;
-    downAt=null;
-    if(moved<6) selectCountry(hoverName);
-  });
-
-  try{ globe.globeMaterial().color.set("#eef2f7"); }catch(e){}
+        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+' — '+c+' confirmed</div>';})
+    .onPolygonHover(d=>{hoverName=d?d.properties.name:null;
+      document.getElementById("globe").style.cursor=d?"pointer":"grab";});
+  let down=null; const g=document.getElementById("globe");
+  g.addEventListener("mousedown",e=>down=[e.clientX,e.clientY]);
+  g.addEventListener("click",e=>{ if(!hoverName)return;
+    const m=down?Math.hypot(e.clientX-down[0],e.clientY-down[1]):0; down=null;
+    if(m<6) setCountry(hoverName);});
+  try{globe.globeMaterial().color.set("#eef2f7");}catch(e){}
   const c=globe.controls(); c.autoRotate=false; c.enableDamping=true;
   globe.pointOfView({lat:22,lng:30,altitude:2.4});
-  const fit=()=>{ const el=document.getElementById("view"); globe.width(el.clientWidth).height(el.clientHeight); };
-  fit(); window.addEventListener("resize", fit);
-
-  fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(topo=>{
-    feats = topojson.feature(topo, topo.objects.countries).features;
-    globe.polygonsData(feats);
-    if(ALL.length) fillSelects();
-    paint();
+  const fit=()=>{const el=document.getElementById("view");globe.width(el.clientWidth).height(el.clientHeight);};
+  fit(); addEventListener("resize",fit);
+  fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(t=>{
+    feats=topojson.feature(t,t.objects.countries).features;
+    globe.polygonsData(feats); if(ALL.length) fillCountries(); paint();
   }).catch(()=>{});
 }
-function countryCount(atlasName){
-  return VIEW.filter(p => { const s=statusIn(p,atlasName); return s==="verified"||s==="listed"; }).length;
-}
+const worksIn=c=>ALL.filter(p=>statusIn(p,c)==="verified").length;
 function paint(){
-  if(!globe || !feats.length) return;
-  maxCount = Math.max(1, ...feats.map(f=>countryCount(f.properties.name)));
-  const brand = getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() || "#2c3644";
-  globe.polygonCapColor(f => {
-    const n=f.properties.name, c=countryCount(n);
-    if(country && n===country) return brand;
+  if(!globe||!feats.length) return;
+  const max=Math.max(1,...feats.map(f=>worksIn(f.properties.name)));
+  globe.polygonCapColor(f=>{
+    const n=f.properties.name,c=worksIn(n);
+    if(country&&n===country) return "#2c3644";
     if(!c) return "#c3cfdd";
-    return mix("#dfe6ef", brand, .18 + .72*(c/maxCount));
+    return mix("#dfe6ef","#2c3644",.18+.72*(c/max));
   });
 }
-function mix(a,b,t){
-  const p=h=>h.trim().startsWith("hsl")?null:[1,3,5].map(i=>parseInt(h.trim().slice(i,i+2),16));
-  const A=p(a),B=p(b); if(!A||!B) return t>.5?b:a;
-  return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";
-}
+function mix(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+  const A=p(a),B=p(b);return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";}
 
-/* ==================== filtering ==================== */
-function applyFilters(){
-  const q=document.getElementById("q").value.trim().toLowerCase();
-  VIEW = ALL.filter(p=>{
-    if(activeCats.size && !activeCats.has(p.category)) return false;
-    if(activeSvcs.size && ![...activeSvcs].every(s=>(p.services||[]).includes(s))) return false;
-    if(verifiedOnly && !VERIFIED[p.name]) return false;
-    if(queueOnly && VERIFIED[p.name]) return false;
-    if(q){
-      const s=(p.name+" "+(p.hq||"")+" "+(p.card_network||"")+" "+(p.note||"")).toLowerCase();
-      if(!q.split(/\s+/).every(t=>s.includes(t))) return false;
-    }
-    return true;
-  });
-  paint(); renderList();
+/* ---------------- routing ---------------- */
+function writeURL(push){
+  const q=new URLSearchParams();
+  if(country) q.set("c",country);
+  if(selected) q.set("p",selected.name);
+  if(tab!=="browse") q.set("t",tab);
+  const u=location.pathname+(q.toString()?"?"+q:"");
+  if(u===location.pathname+location.search) return;
+  push?history.pushState({},"",u):history.replaceState({},"",u);
 }
-function listForCountry(){
-  let res;
-  if(!country) res = VIEW.slice();
-  else {
-    const rank={verified:0, listed:1, claim:2, blocked:3};
-    res = VIEW.map(p=>[p,statusIn(p,country)]).filter(([,s])=>s)
-              .sort((a,b)=>rank[a[1]]-rank[b[1]]).map(([p])=>p);
-  }
-  if(sortMode==="name") res.sort((a,b)=>a.name.localeCompare(b.name));
-  else if(sortMode==="verified") res.sort((a,b)=>(!!VERIFIED[b.name])-(!!VERIFIED[a.name]));
-  else if(sortMode==="reach") res.sort((a,b)=>reachOf(b)-reachOf(a));
-  return res;
-}
-function reachOf(p){
-  const v=VERIFIED[p.name];
-  if(v) return v.mode==="block" ? 200-v.set.size : v.set.size;
-  return p._cov.set.size + (p._cov.global?1:0);
-}
+addEventListener("popstate",()=>{
+  const q=new URLSearchParams(location.search);
+  country=q.get("c")||null; tab=q.get("t")||"browse";
+  syncCountry(); setTab(tab,true);
+  const p=q.get("p"), prov=p&&ALL.find(x=>x.name===p);
+  if(prov) openDetail(prov,true); else closeSheets(true);
+  paint(); render();
+});
 
-function selectCountry(name, keepToggle, silent){
-  country = (!keepToggle && country===name) ? null : (name||null);
-  document.getElementById("reset").classList.toggle("on", !!country);
-  document.getElementById("s-scope").textContent = country ? country.toUpperCase() : "GLOBAL VIEW";
-  const pk=document.getElementById("pick"); if(pk && pk.value!==(country||"")) pk.value = country||"";
+/* ---------------- country ---------------- */
+function setCountry(name,silent){
+  country=(country===name)?null:(name||null);
+  syncCountry(); paint(); render();
   if(globe){
-    if(country){
-      const f=feats.find(x=>x.properties.name===country);
-      if(f){ const cc=centroid(f); globe.pointOfView({lat:cc[1],lng:cc[0],altitude:1.7},900); }
-    } else globe.pointOfView({lat:22,lng:30,altitude:2.4},900);
+    const f=country&&feats.find(x=>x.properties.name===country);
+    if(f){const c=centroid(f);globe.pointOfView({lat:c[1],lng:c[0],altitude:1.7},900);}
+    else if(!country) globe.pointOfView({lat:22,lng:30,altitude:2.4},900);
   }
-  paint(); renderList();
   if(!silent) writeURL(true);
 }
-function centroid(f){
-  let xs=[],ys=[];
-  const walk=a=>{ if(typeof a[0]==="number"){xs.push(a[0]);ys.push(a[1]);} else a.forEach(walk); };
-  walk(f.geometry.coordinates);
-  return [xs.reduce((s,v)=>s+v,0)/xs.length, ys.reduce((s,v)=>s+v,0)/ys.length];
+function syncCountry(){
+  const on=!!country;
+  document.getElementById("s-scope").textContent=on?country.toUpperCase():"PICK A COUNTRY";
+  document.getElementById("reset").classList.toggle("on",on);
+  document.getElementById("clear-c").hidden=!on;
+  document.getElementById("answer").classList.toggle("on",on);
+  const pk=document.getElementById("pick"); if(pk.value!==(country||"")) pk.value=country||"";
+  if(on){
+    const s={verified:0,blocked:0,other:0};
+    ALL.forEach(p=>{const st=statusIn(p,country);
+      if(st==="verified")s.verified++; else if(st==="blocked")s.blocked++; else if(st)s.other++;});
+    document.getElementById("a-y").textContent=s.verified;
+    document.getElementById("a-n").textContent=s.blocked;
+    document.getElementById("a-u").textContent=s.other;
+  }
+  document.getElementById("s-count").textContent=on?worksIn(country)+" CONFIRMED":"";
 }
-document.getElementById("reset").onclick = () => selectCountry(null, true);
+function centroid(f){let xs=[],ys=[];const w=a=>{if(typeof a[0]==="number"){xs.push(a[0]);ys.push(a[1]);}else a.forEach(w);};
+  w(f.geometry.coordinates);return [xs.reduce((s,v)=>s+v,0)/xs.length,ys.reduce((s,v)=>s+v,0)/ys.length];}
+document.getElementById("reset").onclick=()=>setCountry(null);
+document.getElementById("clear-c").onclick=()=>setCountry(null);
 
-/* ==================== list ==================== */
-function renderList(){
-  const res = listForCountry();
-  const noGeom = country && feats.length && !feats.some(f=>f.properties.name===country);
-  document.getElementById("count").textContent =
-    res.length + " provider" + (res.length===1?"":"s") +
-    (country ? " · "+country+(noGeom?" (too small to plot)":"") : " worldwide");
-  document.getElementById("s-count").textContent = String(res.length).padStart(3,"0")+" PROVIDERS";
+/* ---------------- search: structured, not magic ---------------- */
+const FILTER_WORDS=[
+ [/virtual\s*card/,"virtual"],[/physical\s*card|metal\s*card/,"physical"],
+ [/crypto\s*card/,"cryptocard"],[/\biban\b|bank\s*details/,"iban"],
+ [/usd|multi[-\s]?currenc|foreign\s*currenc/,"multicur"],
+ [/transfer|remit|send\s*money/,"transfers"],
+ [/self[-\s]?custod|non[-\s]?custod|own\s*keys/,"selfcust"],
+ [/no\s*kyc|without\s*kyc/,"nokyc"],[/cashback/,"cashback"],[/yield|interest|apy/,"yield"],
+ [/stablecoin|usdc|usdt/,"stables"],[/wallet/,"_wallet"],[/card/,"card"]
+];
+function parseQuery(raw){
+  let s=" "+raw.toLowerCase().trim()+" ";
+  const filters=new Set(); let foundCountry=null;
+  const names=allCountryNames();
+  for(const c of names){
+    const re=new RegExp("\\b"+c.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b");
+    if(re.test(s)){ foundCountry=c; s=s.replace(re," "); break; }
+  }
+  FILTER_WORDS.forEach(([re,f])=>{ if(re.test(s)){ filters.add(f); s=s.replace(re," "); } });
+  s=s.replace(/\b(in|for|the|a|an|available|works?|with|and|that|me)\b/g," ").replace(/\s+/g," ").trim();
+  return {text:s,filters,country:foundCountry};
+}
+function matchesQuery(p){
+  const a=p._a;
+  for(const f of qParsed.filters){
+    if(f==="_wallet"){ if(typeOf(p)!=="Wallet") return false; continue; }
+    if(f==="card"){ if(!a.card) return false; continue; }
+    if(!a[f]) return false;
+  }
+  for(const f of activeChips) if(!a[f]&&!(f==="verified"&&VERIFIED[p.name])) return false;
+  if(qParsed.text){
+    const hay=(p.name+" "+(p.hq||"")+" "+(p.card_network||"")+" "+(p.note||"")).toLowerCase();
+    if(!qParsed.text.split(" ").every(t=>hay.includes(t))) return false;
+  }
+  return true;
+}
 
+/* ---------------- render ---------------- */
+function render(){
+  if(tab==="browse") renderBrowse();
+  else if(tab==="match") renderMatch();
+  else if(tab==="changes") renderChanges();
+  else renderTrack();
+}
+function scoreOf(p){
+  let s=0; const st=country?statusIn(p,country):null;
+  if(st==="verified") s+=100; else if(st==="listed") s+=40; else if(st==="claim") s+=10;
+  else if(st==="blocked") s-=100;
+  if(VERIFIED[p.name]) s+=20;
+  if(p.fx_markup||(VERIFIED[p.name]||{}).fee) s+=6;
+  if((p.services||[]).length) s+=4;
+  return s;
+}
+function sortList(a){
+  if(sortMode==="name") return a.sort((x,y)=>x.name.localeCompare(y.name));
+  if(sortMode==="reach") return a.sort((x,y)=>reachOf(y)-reachOf(x));
+  if(sortMode==="checked") return a.sort((x,y)=>(VERIFIED[y.name]?1:0)-(VERIFIED[x.name]?1:0));
+  return a.sort((x,y)=>scoreOf(y)-scoreOf(x)||x.name.localeCompare(y.name));
+}
+const reachOf=p=>VERIFIED[p.name]?VERIFIED[p.name].list.length:(p._cov.set.size+(p._cov.global?1:0));
+
+function renderBrowse(){
   const box=document.getElementById("rows");
-  box.innerHTML="";
-  if(!res.length){
-    const q=document.getElementById("q").value.trim();
-    box.innerHTML = '<div class="none">'+(
-      q ? 'Nothing matches “'+esc(q)+'”'+(country?' in '+esc(country):'')+'.<br>Clear the search to widen it.'
-        : (verifiedOnly ? 'Nothing verified here yet. That is the backlog, not the answer — try clearing the verified filter.'
-        : 'No provider lists '+esc(country||'these filters')+'.<br><br>That usually means <b>missing data, not absence</b> — 55% of crypto providers publish no country list at all.')
-    )+'</div>';
-    return;
-  }
-  const frag=document.createDocumentFragment();
-  res.forEach((p,i)=>{
-    const st=statusIn(p,country), v=VERIFIED[p.name], reps=reportsFor(p.name,country);
-    const gaps=gapsOf(p), fee=feeOf(p);
-    const stale = v && ageDays(v.checked) > STALE_DAYS;
-    const b=document.createElement("button");
-    b.className="row"+(st==="blocked"?" blocked":"");
-    b.setAttribute("role","listitem");
-    b.setAttribute("aria-label", p.name+(country?" in "+country:"")+" — "+(st||"unknown"));
-    b.innerHTML =
-      '<span class="rtop"><span class="n">'+(i+1)+'</span><h3>'+esc(p.name)+'</h3></span>'+
-      '<span class="rbody">'+
-        '<p>'+esc(p.category==="hybrid"?"Hybrid fiat + crypto":"Web3-native · self-custodial")+
-          (p.hq&&p.hq!=="—"?" · "+esc(p.hq):"")+
-          (v?" · "+esc(v.breadth):"")+'</p>'+
-        (fee?'<p class="fee">'+esc(fee)+'</p>':'')+
-        '<span class="tags">'+
-          (STATUS_TAG[st]||'')+
-          (p.card_network?'<span class="tag">'+esc(p.card_network)+'</span>':'')+
-          (reps.length?'<span class="tag rep">'+reps.length+' report'+(reps.length===1?'':'s')+'</span>':'')+
-          (stale?'<span class="tag stale">Re-check due</span>':'')+
-          (v?'':gaps.map(g=>'<span class="tag gap">No '+g+'</span>').join(''))+
-        '</span>'+
-      '</span>';
-    b.onclick=()=>openDetail(p);
-    frag.appendChild(b);
+  if(loadState==="loading"){ box.innerHTML=Array(5).fill('<div class="skel"><i></i><i></i><i></i></div>').join("");
+    document.getElementById("count").textContent="Loading…"; return; }
+  if(loadState==="error"){
+    box.innerHTML='<div class="empty"><b>Couldn\'t load the product list.</b><br>'+
+      'The directory feed didn\'t respond. Nothing you did wrong.'+
+      '<br><button class="solid" onclick="location.reload()">Try again</button></div>';
+    document.getElementById("count").textContent="Offline"; return; }
+
+  VIEW=ALL.filter(matchesQuery);
+  let list=sortList(VIEW.slice());
+  if(country) list=list.filter(p=>statusIn(p,country));
+
+  document.getElementById("count").textContent=
+    list.length+(list.length===1?" product":" products")+(country?" · "+country:"");
+
+  if(!list.length){ box.innerHTML=emptyCopy(); wireEmpty(); return; }
+
+  const groups=country
+    ? [["Works here",p=>statusIn(p,country)==="verified"],
+       ["Listed, but nobody has checked",p=>["listed","claim"].includes(statusIn(p,country))],
+       ["Will turn you down",p=>statusIn(p,country)==="blocked"]]
+    : [["All products",()=>true]];
+
+  let html="";
+  groups.forEach(([title,fn])=>{
+    const set=list.filter(fn); if(!set.length) return;
+    html+='<div class="grp">'+title+' · '+set.length+'</div>';
+    set.forEach(p=>html+=rowHTML(p));
   });
-  box.appendChild(frag);
+  box.innerHTML=html;
+  [...box.querySelectorAll("[data-p]")].forEach(el=>el.onclick=()=>openDetail(ALL.find(x=>x.name===el.dataset.p)));
+}
+function rowHTML(p){
+  const st=country?statusIn(p,country):null, v=VERIFIED[p.name], a=p._a;
+  const fee=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup)||null;
+  const bits=[typeOf(p)];
+  if(a.virtual) bits.push("virtual card");
+  if(a.iban) bits.push("IBAN");
+  if(a.selfcust) bits.push("your keys");
+  if(v) bits.push("works in "+v.list.length+" countries");
+  return '<button class="row'+(st==="blocked"?" off":"")+'" data-p="'+esc(p.name)+'">'+
+    '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
+      (st==="verified"?'<span class="t ok">Works here</span>':
+       st==="blocked"?'<span class="t no">Not here</span>':
+       st?'<span class="t rev">Unchecked</span>':VTAG[vstate(p)])+'</span>'+
+    '<p class="why">'+esc(bits.join(" · "))+'</p>'+
+    (fee?'<p class="why"><b>'+esc(fee)+'</b></p>':'')+
+    '<span class="tags">'+
+      (p.card_network?'<span class="t">'+esc(p.card_network)+'</span>':'')+
+      (isTracked(p.name,country)?'<span class="t trk">Tracking</span>':'')+
+      (reportsFor(p.name,country).length?'<span class="t rep">'+reportsFor(p.name,country).length+' report</span>':'')+
+    '</span></button>';
+}
+function emptyCopy(){
+  if(qParsed.text||qParsed.filters.size||activeChips.size)
+    return '<div class="empty"><b>Nothing matched that.</b><br>Try dropping a word, or clear the filters.'+
+      '<br><button class="solid" id="e-clear">Clear search and filters</button></div>';
+  if(country)
+    return '<div class="empty"><b>No product in the list mentions '+esc(country)+'.</b><br>'+
+      'Usually that means nobody has checked, not that nothing works. '+
+      'Two thirds of these companies publish no country list at all.'+
+      '<br><button class="solid" id="e-track">Tell me when something lands in '+esc(country)+'</button></div>';
+  return '<div class="empty">Nothing to show.</div>';
+}
+function wireEmpty(){
+  const c=document.getElementById("e-clear");
+  if(c) c.onclick=()=>{document.getElementById("q").value="";qParsed={text:"",filters:new Set()};
+    activeChips.clear();buildChips();render();};
+  const t=document.getElementById("e-track");
+  if(t) t.onclick=()=>{addTrack(null,country);toast("Tracking "+country);};
 }
 
-/* ==================== detail ==================== */
-function openDetail(p, silent){
-  selected=p;
-  document.documentElement.style.setProperty("--brand", brandOf(p));
-  paint();
-  document.getElementById("d-cat").textContent =
-    (p.category==="hybrid"?"Hybrid_Fiat+Crypto":"Web3_Native")+(p.custody?" · "+p.custody:"");
-  document.getElementById("d-name").textContent=p.name;
-  document.getElementById("d-sub").textContent =
-    [p.hq&&p.hq!=="—"?p.hq:null, p.founded?"Founded "+p.founded:null, p.regulation_type].filter(Boolean).join(" · ");
+/* ---------------- match ---------------- */
+const NEEDS=[
+ ["virtual","A virtual card"],["physical","A physical card"],["cryptocard","A card that spends crypto"],
+ ["iban","Bank details / IBAN"],["multicur","Hold more than one currency"],
+ ["transfers","Send money abroad"],["selfcust","Keys stay with me"],
+ ["nokyc","No KYC to hold funds"],["cashback","Cashback"],["yield","Interest on my balance"]
+];
+function renderMatch(){
+  const out=document.getElementById("match-out");
+  if(!country){
+    out.innerHTML='<div class="empty"><b>Pick a country first.</b><br>'+
+      'Matching without one just gives you a list of things that might not reach you.</div>'; return; }
+  if(!needs.size){
+    out.innerHTML='<div class="empty">Choose one or more things above and it will rank what fits.</div>'; return; }
 
-  const cov=p._cov, v=VERIFIED[p.name], reps=reportsFor(p.name,null);
-  const fld=(k,val,miss)=>'<div class="fld"><div class="k">'+k+'</div><div class="v'+(miss?' miss':'')+'">'+val+'</div></div>';
-  let h="";
-
-  if(country){
+  const scored=ALL.map(p=>{
     const st=statusIn(p,country);
-    h += fld("In "+esc(country),
-      st==="verified" ? '<span class="tag ok">Available</span>'
-      : st==="blocked" ? '<span class="tag no">Not available</span>'
-      : st==="listed"  ? '<span class="tag">Listed by the dataset — unverified</span>'
-      : '<span class="tag">Only a “global” claim — nobody has checked</span>');
+    const hits=[...needs].filter(n=>p._a[n]);
+    return {p,st,hits};
+  }).filter(x=>x.st&&x.st!=="blocked"&&x.hits.length)
+    .sort((a,b)=>(b.hits.length-a.hits.length)||(b.st==="verified")-(a.st==="verified")||scoreOf(b.p)-scoreOf(a.p));
+
+  if(!scored.length){
+    const blocked=ALL.filter(p=>statusIn(p,country)==="blocked"&&[...needs].some(n=>p._a[n])).length;
+    out.innerHTML='<div class="empty"><b>Nothing in the data does all that in '+esc(country)+'.</b><br>'+
+      (blocked?blocked+' product'+(blocked===1?'':'s')+' would fit, but '+(blocked===1?'it refuses':'they refuse')+' your country.<br>':'')+
+      'Try removing a requirement.</div>'; return; }
+
+  const label=Object.fromEntries(NEEDS);
+  out.innerHTML='<div class="grp">'+scored.length+' fit · best first</div>'+scored.slice(0,25).map(({p,st,hits})=>{
+    const v=VERIFIED[p.name], miss=[...needs].filter(n=>!p._a[n]);
+    const why=(st==="verified"?"Works in "+country:"Listed for "+country+", unverified")+
+      " · "+hits.map(h=>label[h].toLowerCase()).join(", ");
+    return '<button class="row" data-p="'+esc(p.name)+'">'+
+      '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
+        (st==="verified"?'<span class="t ok">Works here</span>':'<span class="t rev">Unchecked</span>')+'</span>'+
+      '<p class="why">'+esc(why)+'</p>'+
+      (miss.length?'<p class="why">Doesn\'t do: '+esc(miss.map(m=>label[m].toLowerCase()).join(", "))+'</p>':'')+
+      ((v&&v.fee)?'<p class="why"><b>'+esc(v.fee)+'</b></p>':'')+
+    '</button>';
+  }).join("");
+  [...out.querySelectorAll("[data-p]")].forEach(el=>el.onclick=()=>openDetail(ALL.find(x=>x.name===el.dataset.p)));
+}
+
+/* ---------------- changes ---------------- */
+function renderChanges(){
+  const mine=LS.get("cov_reports",[]).map(r=>({d:r.at.slice(0,10),p:r.provider,
+    t:"You reported: "+({works:"it works in ",blocked:"it refused ",kyc:"KYC rejected in ",
+      card_no:"no card in ",fee_diff:"different fees in ",gone:"stopped working in ",other:"an issue in "}[r.outcome]||"")+r.country,
+    s:"Your report",u:null}));
+  const all=[...mine,...CHANGES].sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+  document.getElementById("changes-out").innerHTML=
+    '<div class="empty" style="padding-bottom:0"><b>What moved recently.</b><br>'+
+    'Only things with a source. Per-product history needs snapshots over time — see the note at the bottom.</div>'+
+    all.map(c=>'<div class="row" style="cursor:default">'+
+      '<span class="rt"><h3>'+esc(c.t)+'</h3><span class="t">'+esc(c.d)+'</span></span>'+
+      '<p class="why">'+(c.p?esc(c.p)+" · ":"")+esc(c.s)+
+        (c.u?' · <a href="'+esc(c.u)+'" target="_blank" rel="noopener noreferrer">source</a>':'')+'</p></div>').join("")+
+    '<div class="empty">Coverage started tracking on 2026-07-29, so there is no deep history yet. '+
+    'From here, every re-check writes a dated row.</div>';
+}
+
+/* ---------------- tracking ---------------- */
+function addTrack(provider,ctry){
+  const t=tracked(); if(t.some(x=>x.provider===provider&&x.country===(ctry||null))) return;
+  t.push({provider,country:ctry||null,at:new Date().toISOString()}); LS.set("cov_track",t); syncTrack();
+}
+function removeTrack(provider,ctry){
+  LS.set("cov_track",tracked().filter(x=>!(x.provider===provider&&x.country===(ctry||null)))); syncTrack();
+}
+function syncTrack(){
+  const n=tracked().length;
+  document.getElementById("trk-n").textContent=n?"("+n+")":"";
+  if(tab==="track") renderTrack();
+  if(tab==="browse") renderBrowse();
+}
+function renderTrack(){
+  const t=tracked();
+  const out=document.getElementById("track-out");
+  if(!t.length){ out.innerHTML='<div class="empty"><b>Nothing tracked yet.</b><br>'+
+    'Open a product and hit Track to keep an eye on it, or track a whole country to catch new arrivals.</div>'; return; }
+  out.innerHTML='<div class="empty" style="padding-bottom:0">'+
+    'Kept in this browser. Email or push alerts need a backend — the schema for it is in ROADMAP.md.</div>'+
+    t.map(x=>'<div class="row" style="cursor:default"><span class="rt"><h3>'+
+      esc(x.provider||("Anything new in "+x.country))+'</h3>'+
+      '<button class="t" data-rm="'+esc(x.provider||"")+'|'+esc(x.country||"")+'">Stop</button></span>'+
+      '<p class="why">'+(x.provider?(x.country?"in "+esc(x.country):"any country change"):"new arrivals")+'</p></div>').join("");
+  [...out.querySelectorAll("[data-rm]")].forEach(b=>b.onclick=()=>{
+    const [p,c]=b.dataset.rm.split("|"); removeTrack(p||null,c||null); toast("Stopped tracking");});
+}
+
+/* ---------------- detail ---------------- */
+function openDetail(p,silent){
+  if(!p) return;
+  selected=p;
+  const v=VERIFIED[p.name], a=p._a, st=country?statusIn(p,country):null;
+  document.getElementById("d-name").textContent=p.name;
+  document.getElementById("d-sub").textContent=[typeOf(p),p.hq&&p.hq!=="—"?p.hq:null,
+    p.founded?"since "+p.founded:null].filter(Boolean).join(" · ");
+
+  let h="";
+  /* the answer, first */
+  h+='<div class="verdict">';
+  if(country){
+    h+='<b>'+(st==="verified"?"Yes — this works in "+esc(country)
+      :st==="blocked"?"No — "+esc(p.name)+" does not serve "+esc(country)
+      :"Nobody has checked "+esc(country)+" yet")+'</b>';
+    h+='<p>'+(st==="verified"?"Confirmed against "+(v.confidence==="issuer"?"the issuer's own documentation":
+        v.confidence==="secondary"?"a secondary source":"a structured country matrix")+" on "+esc(v.checked)+"."
+      :st==="blocked"?"It is not on the availability list that was checked on "+esc(v.checked)+"."
+      :"The company publishes "+(p._cov.global?'a blanket “global” claim with no country list':'no country list')+
+       ", and it hasn't been checked by hand.")+'</p>';
+  } else {
+    h+='<b>Pick a country to get a straight answer</b><p>Everything below is what the product does in general.</p>';
   }
+  h+='<div class="tags">'+VTAG[vstate(p)]+
+    (v?'<span class="t hard">'+v.list.length+' countries</span>':'')+
+    (a.virtual?'<span class="t">Virtual card</span>':'')+
+    (a.iban?'<span class="t">IBAN</span>':'')+
+    (a.selfcust?'<span class="t">Self-custody</span>':'')+'</div></div>';
+
+  const fld=(k,val,miss)=>'<div class="fld"><div class="k">'+k+'</div><div class="v'+(miss?" miss":"")+'">'+val+'</div></div>';
+  const money=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup);
+  h+=fld("Costs", money?esc(money):"Not published anywhere I could find", !money);
+  h+=fld("Card", p.card_network?esc([p.card_network,p.card_type].filter(Boolean).join(" · ")):"No card", !p.card_network);
+  h+=fld("Who holds it", esc(p.custody||"Unknown"), !p.custody);
+  h+=fld("KYC", p.kyc==="No"?"Not required":p.kyc==="Card only"?"Only if you want the card":"Required", false);
+  if(p.cashback) h+=fld("Cashback", esc(p.cashback));
+  if(p.yield) h+=fld("Yield", esc(p.yield));
+  h+=fld("Money movement",(p.services||[]).length
+    ?'<div class="cl">'+p.services.map(s=>'<button style="cursor:default">'+esc(s)+'</button>').join("")+'</div>'
+    :"Not published — this is the emptiest field in the whole dataset", !(p.services||[]).length);
 
   if(v){
-    const age=ageDays(v.checked);
-    h += fld("Verified reach",
-      '<b>'+esc(v.breadth)+'</b>'+
+    h+=fld("Works in",'<div class="cl">'+v.list.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join("")+'</div>'+
       (v.note?'<p class="note">'+esc(v.note)+'</p>':'')+
-      (v.conflict?'<p class="note" style="color:var(--warn)"><b>Sources disagree:</b> '+esc(v.conflict)+'</p>':'')+
-      '<p class="note">Checked '+esc(v.checked)+' ('+age+' days ago)'+
-        (age>STALE_DAYS?' — <b>re-check due</b>':'')+' · '+
-        ({issuer:"issuer documentation",secondary:"secondary source"}[v.confidence]||"directory matrix")+' · '+
-        '<a href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
-    h += fld(v.mode==="block"?"Will NOT serve":"Available only in",
-      '<div class="cl'+(v.mode==="block"?' no':'')+'">'+
-        v.list.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join('')+'</div>'+
-      '<p class="note">'+v.list.length+(v.mode==="block"
-        ? ' countries excluded outright, whatever the marketing says.'
-        : ' countries — everywhere else is a no.')+'</p>');
-    if(cov.set.size||cov.global) h += fld("Dataset says",
-      (cov.set.size?'<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>':'')+
-      '<p class="note">The open dataset lists '+(cov.set.size?'only these '+cov.set.size:'nothing but “Global”')+'. That is the gap.</p>');
+      (v.conflict?'<p class="note" style="color:var(--warn)"><b>Sources disagree:</b> '+esc(v.conflict)+'</p>':''));
+    h+=fld("Last verified", esc(v.checked)+" ("+ageDays(v.checked)+" days ago)"+
+      (ageDays(v.checked)>STALE?' — <b>due a re-check</b>':'')+
+      '<p class="note">'+({issuer:"Read from the issuer's own documentation",
+        secondary:"Read from a secondary source",}[v.confidence]||"Read from a structured directory")+
+      ' · <a href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a></p>');
   } else {
-    h += fld("Available in", cov.set.size
-      ? '<div class="cl">'+[...cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join('')+'</div>'
-        + (cov.global?'<p class="note">Also claims worldwide availability — unverified.</p>':'')
-      : (cov.global?'Claims “Global” — no country list published, and nobody has checked yet'
-                   :'Not published'), !cov.set.size);
+    h+=fld("Works in", p._cov.set.size
+      ? '<div class="cl">'+[...p._cov.set].sort().map(c=>'<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join("")+'</div>'+
+        '<p class="note">Straight from the company. Not checked.</p>'
+      : (p._cov.global?'Says “global” and lists nothing':'Nothing published'), true);
+    h+=fld("Last verified","Never","miss");
   }
+  if(p.license) h+=fld("Licence", esc(p.license));
+  if(p.note) h+=fld("Context", esc(p.note));
+  if(p.website) h+=fld("Site",'<a href="'+esc(p.website)+'" target="_blank" rel="noopener noreferrer">'+esc(p.domain||p.website)+'</a>');
 
-  h += fld("Fees", feeOf(p) ? esc(feeOf(p)) + (p.fx_markup&&p.fx_markup.as_of&&!(v&&v.fee)
-        ? '<p class="note">as of '+esc(p.fx_markup.as_of)+'</p>':'')
-      : "Not published — unverified", !feeOf(p));
-  h += fld("On / off ramp", (p.services||[]).length
-      ? '<div class="tags">'+p.services.map(s=>'<span class="tag">'+esc(s)+'</span>').join('')+'</div>'
-      : "Not published — unverified", !(p.services||[]).length);
-  h += fld("Card", [p.card_network,p.card_type].filter(Boolean).join(" · ")||"None", !p.card_network);
-  h += fld("Cashback", p.cashback||"None advertised", !p.cashback);
-  h += fld("Yield", p.yield||"None advertised", !p.yield);
-  h += fld("Stablecoins", p.stablecoins?"Yes":"No");
-  h += fld("KYC", p.kyc||"Unknown", !p.kyc);
-  h += fld("Licence", esc(p.license||"Not published"), !p.license);
-  if(p.note) h += fld("Note", esc(p.note));
-  if(p.website) h += fld("Site",'<a href="'+esc(p.website)+'" target="_blank" rel="noopener noreferrer">'+esc(p.domain||p.website)+'</a>');
+  const reps=reportsFor(p.name);
+  if(reps.length) h+=fld("From users", reps.map(r=>'<div style="margin-bottom:9px"><span class="t rep">'+
+    esc(r.country)+'</span> '+esc(r.note||r.outcome)+'</div>').join(""));
 
-  if(reps.length){
-    h += '<div class="fld"><div class="k">Community</div><div class="v">'+
-      reps.map(r=>'<div style="margin-bottom:8px"><span class="tag rep">'+esc(OUTCOME_LABEL[r.outcome]||r.outcome)+'</span> '+
-        '<b style="font-size:13px">'+esc(r.country)+'</b>'+
-        (r.note?'<div class="note" style="margin-top:3px">'+esc(r.note)+'</div>':'')+'</div>').join('')+
-      '</div></div>';
-  }
-
-  const gaps=gapsOf(p);
-  h += '<div class="verifybox"><span class="lbl">'+(v?"Confirm_This":"Help_Verify")+'</span>'+
-    '<p>'+(v ? 'Checked against '+({issuer:"the issuer's own docs",secondary:"a secondary source"}[v.confidence]||"a structured directory")+
-              '. Published is still not the same as true — did it work where you are?'
-            : 'Nobody has verified this provider yet'+(gaps.length?'; it publishes no '+gaps.join(", ").toLowerCase():'')+
-              '. Your report is how it gets checked.')+'</p>'+
-    '<button class="solid" id="verify-btn">Add a report</button>'+
-    '<button class="ghost" id="cmp-btn" style="margin-left:18px">'+(cmp.has(p.name)?"Remove from compare":"Add to compare")+'</button></div>';
+  h+='<div class="acts2">'+
+    '<button class="solid" id="d-cmp">'+(cmp.has(p.name)?"Remove from compare":"Add to compare")+'</button>'+
+    '<button class="ghost" id="d-trk">'+(isTracked(p.name,country)?"Stop tracking":"Track"+(country?" in "+esc(country):""))+'</button>'+
+    '<button class="ghost" id="d-rep">Report incorrect data</button></div>';
 
   const body=document.getElementById("d-body");
   body.innerHTML=h; body.scrollTop=0;
-  body.querySelectorAll("[data-c]").forEach(b=>{ b.onclick=()=>{ closeSheets(); selectCountry(b.dataset.c,true); }; });
-  document.getElementById("verify-btn").onclick=()=>openModal(p.name);
-  document.getElementById("cmp-btn").onclick=()=>{ toggleCmp(p.name); openDetail(p,true); };
+  [...body.querySelectorAll("[data-c]")].forEach(b=>b.onclick=()=>{closeSheets();setCountry(b.dataset.c);});
+  document.getElementById("d-cmp").onclick=()=>{toggleCmp(p.name);openDetail(p,true);};
+  document.getElementById("d-trk").onclick=()=>{
+    isTracked(p.name,country)?removeTrack(p.name,country):addTrack(p.name,country);
+    openDetail(p,true); toast(isTracked(p.name,country)?"Tracking":"Stopped");};
+  document.getElementById("d-rep").onclick=()=>openReport(p.name);
   document.getElementById("detail").classList.add("on");
   document.getElementById("back").focus();
   if(!silent) writeURL(true);
@@ -792,186 +900,184 @@ function openDetail(p, silent){
 function closeSheets(silent){
   document.getElementById("detail").classList.remove("on");
   document.getElementById("compare").classList.remove("on");
-  selected=null;
-  document.documentElement.style.setProperty("--brand","#2c3644");
-  paint();
-  if(!silent) writeURL(true);
+  selected=null; if(!silent) writeURL(true);
 }
 document.getElementById("back").onclick=()=>closeSheets();
 document.getElementById("cback").onclick=()=>closeSheets();
 
-/* ==================== compare ==================== */
-function toggleCmp(name){
-  cmp.has(name) ? cmp.delete(name) : cmp.add(name);
-  if(cmp.size>3){ cmp.delete([...cmp][0]); }
+/* ---------------- compare ---------------- */
+function toggleCmp(n){
+  cmp.has(n)?cmp.delete(n):cmp.add(n);
+  if(cmp.size>3) cmp.delete([...cmp][0]);
   const t=document.getElementById("tray");
-  t.classList.toggle("on", cmp.size>0);
-  document.getElementById("tray-n").textContent = cmp.size+" selected"+(cmp.size===3?" (max)":"");
+  t.classList.toggle("on",cmp.size>0);
+  document.getElementById("tray-n").textContent=cmp.size+" selected"+(cmp.size===3?" · max":"");
 }
-document.getElementById("tray-clear").onclick=()=>{
-  cmp.clear();
-  document.getElementById("tray").classList.remove("on");
-  if(selected) openDetail(selected, true);
-};
-document.getElementById("tray-go").onclick=()=>openCompare();
-
+document.getElementById("tray-clear").onclick=()=>{cmp.clear();document.getElementById("tray").classList.remove("on");
+  if(selected) openDetail(selected,true);};
+document.getElementById("tray-go").onclick=openCompare;
 function openCompare(){
   const list=[...cmp].map(n=>ALL.find(p=>p.name===n)).filter(Boolean);
   if(!list.length) return;
-  document.getElementById("c-title").textContent = list.map(p=>p.name).join("  ·  ");
-  document.getElementById("c-sub").textContent = country ? "Judged for "+country : "No country selected — pick one for a real answer";
-  const row=(k,fn)=>'<tr><th>'+k+'</th>'+list.map(p=>'<td>'+fn(p)+'</td>').join('')+'</tr>';
-  const st=p=>{ const s=statusIn(p,country);
-    return country ? (s==="verified"?'<span class="tag ok">Available</span>'
-      :s==="blocked"?'<span class="tag no">No</span>'
-      :s==="listed"?'<span class="tag">Listed</span>':'<span class="tag">Claim only</span>') : '—'; };
-  document.getElementById("c-body").innerHTML =
-    '<table class="ctable">'+
-    '<tr><th></th>'+list.map(p=>'<td class="nm">'+esc(p.name)+'</td>').join('')+'</tr>'+
-    row(country?"In "+esc(country):"Status", st)+
-    row("Verified", p=>VERIFIED[p.name]?'<span class="tag ok">Yes · '+esc(VERIFIED[p.name].checked)+'</span>':'<span class="tag gap">Not yet</span>')+
-    row("Reach", p=>{const v=VERIFIED[p.name]; return v?esc(v.breadth):(p._cov.global?"“Global” claim":p._cov.set.size+" listed");})+
-    row("Fees", p=>feeOf(p)?esc(feeOf(p)):'<span class="tag gap">Unknown</span>')+
-    row("Card", p=>esc([p.card_network,p.card_type].filter(Boolean).join(" · ")||"—"))+
-    row("Cashback", p=>esc(p.cashback||"—"))+
-    row("Yield", p=>esc(p.yield||"—"))+
-    row("Custody", p=>esc(p.custody||"—"))+
-    row("Ramps", p=>(p.services||[]).length?esc(p.services.join(", ")):'<span class="tag gap">Unknown</span>')+
-    '</table>';
+  document.getElementById("c-title").textContent=list.map(p=>p.name).join("  vs  ");
+  document.getElementById("c-sub").textContent=country?"For someone living in "+country:"No country picked — availability column will be blank";
+  const row=(k,fn)=>'<tr><th>'+k+'</th>'+list.map(p=>'<td>'+fn(p)+'</td>').join("")+'</tr>';
+  const yn=b=>b?'<span class="t ok">Yes</span>':'<span class="t">No</span>';
+  document.getElementById("c-body").innerHTML='<table class="cmp">'+
+    '<tr><th></th>'+list.map(p=>'<td class="nm">'+esc(p.name)+'</td>').join("")+'</tr>'+
+    (country?row("In "+esc(country),p=>{const s=statusIn(p,country);
+      return s==="verified"?'<span class="t ok">Works</span>':s==="blocked"?'<span class="t no">No</span>':
+        '<span class="t rev">Unchecked</span>';}):"")+
+    row("Countries",p=>{const v=VERIFIED[p.name];return v?v.list.length:(p._cov.global?"“Global”":p._cov.set.size||"—");})+
+    row("Costs",p=>{const v=VERIFIED[p.name];const f=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup);
+      return f?esc(f):'<span class="t rev">Unknown</span>';})+
+    row("Card",p=>esc([p.card_network,p.card_type].filter(Boolean).join(" · ")||"None"))+
+    row("Virtual card",p=>yn(p._a.virtual))+
+    row("IBAN",p=>yn(p._a.iban))+
+    row("Multi-currency",p=>yn(p._a.multicur))+
+    row("Spends crypto",p=>yn(p._a.cryptocard))+
+    row("Your keys",p=>yn(p._a.selfcust))+
+    row("Cashback",p=>esc(p.cashback||"—"))+
+    row("Yield",p=>esc(p.yield||"—"))+
+    row("Last verified",p=>{const v=VERIFIED[p.name];return v?esc(v.checked):'<span class="t rev">Never</span>';})+
+    '</table>'+
+    '<div class="empty">Blank cells mean the data doesn\'t exist yet, not that the answer is no. '+
+    'Apple Pay, Google Pay, business accounts and per-currency detail aren\'t in any open dataset — they need collecting by hand.</div>';
   document.getElementById("compare").classList.add("on");
   document.getElementById("cback").focus();
 }
 
-/* ==================== modal ==================== */
-function openModal(prov){
+/* ---------------- report ---------------- */
+function openReport(prov){
   if(prov) document.getElementById("f-prov").value=prov;
   if(country) document.getElementById("f-ctry").value=country;
+  document.getElementById("r-title").textContent=prov?"Is this wrong about "+prov+"?":"Is something wrong?";
   document.getElementById("ov").classList.add("show");
-  document.getElementById("f-out").focus();
 }
-function closeModal(){
-  document.getElementById("ov").classList.remove("show");
-  document.getElementById("err").style.display="none";
-}
-document.getElementById("open-top").onclick=()=>openModal(selected?selected.name:null);
-document.getElementById("open-foot").onclick=()=>openModal(selected?selected.name:null);
-document.getElementById("cancel").onclick=closeModal;
-document.getElementById("ov").onclick=e=>{ if(e.target.id==="ov") closeModal(); };
-
-document.addEventListener("keydown", e=>{
-  if(e.key!=="Escape") return;
-  if(document.getElementById("ov").classList.contains("show")) return closeModal();
-  if(document.getElementById("onb").classList.contains("show")) return closeOnb();
-  if(document.getElementById("compare").classList.contains("on")) return closeSheets();
-  if(document.getElementById("detail").classList.contains("on")) return closeSheets();
-  if(country) selectCountry(null, true);
-});
-
+const closeReport=()=>{document.getElementById("ov").classList.remove("show");
+  document.getElementById("err").style.display="none";};
+document.getElementById("report-any").onclick=()=>openReport(selected?selected.name:null);
+document.getElementById("cancel").onclick=closeReport;
+document.getElementById("ov").onclick=e=>{if(e.target.id==="ov")closeReport();};
 document.getElementById("submit").onclick=()=>{
-  const rec={ provider:document.getElementById("f-prov").value,
-    country:document.getElementById("f-ctry").value,
-    outcome:document.getElementById("f-out").value,
-    note:document.getElementById("f-note").value.trim(),
-    at:new Date().toISOString() };
+  const rec={provider:document.getElementById("f-prov").value,country:document.getElementById("f-ctry").value,
+    outcome:document.getElementById("f-out").value,note:document.getElementById("f-note").value.trim(),
+    at:new Date().toISOString()};
   const err=document.getElementById("err");
-  if(!rec.provider||!rec.country){ err.textContent="Pick a provider and a country"; err.style.display="block"; return; }
-  const arr=store.read(); arr.push(rec); store.write(arr);
+  if(!rec.provider||!rec.country){err.textContent="Pick a product and a country";err.style.display="block";return;}
+  const a=LS.get("cov_reports",[]); a.push(rec); LS.set("cov_reports",a);
   document.getElementById("f-note").value="";
-  closeModal(); renderList();
-  if(selected) openDetail(selected,true);
-  toast("Report saved — thank you");
+  closeReport(); render(); if(selected) openDetail(selected,true);
+  toast("Thanks — logged");
 };
-function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),3200); }
+addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if(document.getElementById("ov").classList.contains("show")) return closeReport();
+  if(document.getElementById("compare").classList.contains("on")||
+     document.getElementById("detail").classList.contains("on")) return closeSheets();
+  if(country) setCountry(null);
+});
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2800);}
 
-/* ==================== onboarding ==================== */
-function closeOnb(){ document.getElementById("onb").classList.remove("show");
-  try{ localStorage.setItem("atlas_onb","1"); }catch(e){} }
-document.getElementById("onb-skip").onclick=closeOnb;
-document.getElementById("onb-go").onclick=()=>{
-  const c=document.getElementById("onb-c").value;
-  closeOnb(); if(c) selectCountry(c,true);
-};
-
-/* ==================== chips & selects ==================== */
-function buildChips(){
-  const cats=document.getElementById("cats");
-  [["hybrid","Hybrid fiat+crypto"],["web3-native","Web3-native"]].forEach(([v,l])=>{
-    const b=document.createElement("button"); b.className="tag"; b.type="button"; b.textContent=l;
-    b.onclick=()=>{ activeCats.has(v)?activeCats.delete(v):activeCats.add(v); b.classList.toggle("on"); applyFilters(); };
-    cats.appendChild(b);
+/* ---------------- tabs ---------------- */
+const TABS=[["browse","t-browse","p-browse"],["match","t-match","p-match"],
+  ["changes","t-changes","p-changes"],["track","t-track","p-track"]];
+function setTab(name,silent){
+  tab=name;
+  TABS.forEach(([n,b,p])=>{
+    document.getElementById(b).classList.toggle("on",n===name);
+    document.getElementById(p).hidden=(n!==name);
   });
-  const bv=document.createElement("button"); bv.className="tag"; bv.type="button"; bv.textContent="Verified only";
-  bv.onclick=()=>{ verifiedOnly=!verifiedOnly; if(verifiedOnly) queueOnly=false, bq.classList.remove("on");
-    bv.classList.toggle("on"); applyFilters(); };
-  cats.appendChild(bv);
-  const bq=document.createElement("button"); bq.className="tag"; bq.type="button"; bq.textContent="Needs checking";
-  bq.onclick=()=>{ queueOnly=!queueOnly; if(queueOnly) verifiedOnly=false, bv.classList.remove("on");
-    bq.classList.toggle("on"); applyFilters(); };
-  cats.appendChild(bq);
+  render(); if(!silent) writeURL(true);
+}
+TABS.forEach(([n,b])=>document.getElementById(b).onclick=()=>setTab(n));
 
-  const sv=document.getElementById("svcs");
-  SERVICES.forEach(s=>{
-    const b=document.createElement("button"); b.className="tag"; b.type="button"; b.textContent=s;
-    b.onclick=()=>{ activeSvcs.has(s)?activeSvcs.delete(s):activeSvcs.add(s); b.classList.toggle("on"); applyFilters(); };
-    sv.appendChild(b);
+/* ---------------- chips ---------------- */
+const CHIPS=[["virtual","Virtual card"],["physical","Physical card"],["cryptocard","Spends crypto"],
+  ["iban","IBAN"],["multicur","Multi-currency"],["selfcust","Your keys"],["verified","Verified only"]];
+function buildChips(){
+  const c=document.getElementById("chips"); c.innerHTML="";
+  CHIPS.forEach(([k,l])=>{
+    const b=document.createElement("button"); b.className="chip"+(activeChips.has(k)?" on":""); b.textContent=l;
+    b.onclick=()=>{activeChips.has(k)?activeChips.delete(k):activeChips.add(k);buildChips();render();};
+    c.appendChild(b);
+  });
+  const n=document.getElementById("needs"); if(!n) return;
+  n.innerHTML="";
+  NEEDS.forEach(([k,l])=>{
+    const b=document.createElement("button"); b.className="chip"+(needs.has(k)?" on":""); b.textContent=l;
+    b.onclick=()=>{needs.has(k)?needs.delete(k):needs.add(k);buildChips();renderMatch();};
+    n.appendChild(b);
   });
 }
-function allCountries(){
+
+/* ---------------- countries ---------------- */
+function allCountryNames(){
   const s=new Set(feats.map(f=>f.properties.name));
   EU.forEach(c=>s.add(norm(c)));
   ALL.forEach(p=>p._cov.set.forEach(c=>s.add(c)));
   Object.values(VERIFIED).forEach(v=>v.set.forEach(c=>s.add(c)));
   return [...s].sort((a,b)=>a.localeCompare(b));
 }
-function fillSelects(){
-  const list=allCountries();
-  const sp=document.getElementById("f-prov"); sp.innerHTML="";
-  ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>sp.add(new Option(p.name,p.name)));
-  [["f-ctry",""],["pick","Every country…"],["onb-c",""]].forEach(([id,ph])=>{
+function fillCountries(){
+  const list=allCountryNames();
+  [["pick","Choose where you live…"],["f-ctry",null]].forEach(([id,ph])=>{
     const el=document.getElementById(id); if(!el) return;
     const keep=el.value; el.innerHTML="";
-    if(id==="pick") el.add(new Option(ph,""));
-    list.forEach(c=>{
-      const n=ALL.filter(p=>{const s=statusIn(p,c);return s==="verified"||s==="listed";}).length;
-      el.add(new Option(c+(id==="pick"?"  ·  "+n:""), c));
-    });
+    if(ph) el.add(new Option(ph,""));
+    list.forEach(c=>{const n=worksIn(c); el.add(new Option(c+(id==="pick"&&n?"  ·  "+n+" work here":""),c));});
     if(keep) el.value=keep;
   });
+  const sp=document.getElementById("f-prov"); sp.innerHTML="";
+  ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>sp.add(new Option(p.name,p.name)));
 }
 
-/* ==================== boot ==================== */
+/* ---------------- boot ---------------- */
 function ingest(data){
-  const ents=(data.entities||[]).filter(e=>e.category && e.category!=="traditional");
-  ALL = ents.map(e=>{ e._cov=coverage(e); return e; });
-  const t=(data.entities||[]).length||1;
-  const pct=n=>Math.round(n/t*100)+"%";
-  document.getElementById("g1").textContent=pct((data.entities||[]).filter(e=>e.countries&&e.countries.length).length);
-  document.getElementById("g2").textContent=pct((data.entities||[]).filter(e=>e.services&&e.services.length).length);
-  document.getElementById("g3").textContent=pct((data.entities||[]).filter(e=>e.fx_markup).length);
-  document.getElementById("g4").textContent=Object.keys(VERIFIED).length+" / "+ALL.length;
-  fillSelects();
-  applyFilters();
-  const fromURL = readURL();
-  let seen=false; try{ seen=!!localStorage.getItem("atlas_onb"); }catch(e){}
-  if(!fromURL && !seen) document.getElementById("onb").classList.add("show");
+  const ents=(data.entities||[]).filter(e=>e.category&&e.category!=="traditional");
+  ALL=ents.map(e=>{e._cov=coverage(e); e._a=attrs(e); return e;});
+  document.getElementById("ver").textContent=Object.keys(VERIFIED).length+" of "+ALL.length+" checked";
+  loadState="ready";
+  fillCountries(); buildChips();
+  const q=new URLSearchParams(location.search);
+  country=q.get("c")||null; tab=q.get("t")||"browse";
+  syncCountry(); syncTrack(); setTab(tab,true); paint();
+  const p=q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
+  if(!country&&!p) showIntro();
+}
+function showIntro(){
+  document.getElementById("rows").innerHTML=
+    '<div class="intro"><h2>Finding a card that works where you live is harder than it should be.</h2>'+
+    '<p>You find one you like. Then you get to the signup and it doesn\'t take your country. So you open another tab. Then another.</p>'+
+    '<p class="q">Coverage is a list of neobanks, cards and wallets with the country question answered up front — where each one works, where it will refuse you, and what it costs.</p>'+
+    '<button class="solid" id="i-go">Pick your country</button>'+
+    '<div class="facts">'+
+      '<div><b>'+Object.keys(VERIFIED).length+'</b><span>checked by hand</span></div>'+
+      '<div><b>'+ALL.length+'</b><span>products listed</span></div>'+
+      '<div><b>6%</b><span>publish their real fees</span></div>'+
+    '</div></div>';
+  document.getElementById("count").textContent="Start with a country";
+  const b=document.getElementById("i-go");
+  if(b) b.onclick=()=>document.getElementById("pick").focus();
 }
 
-buildChips();
-initGlobe();
-document.getElementById("q").addEventListener("input", applyFilters);
-document.getElementById("pick").addEventListener("change", e=>selectCountry(e.target.value,true));
-document.getElementById("sort").addEventListener("change", e=>{ sortMode=e.target.value; renderList(); });
-document.getElementById("ftoggle").onclick=function(){
-  const open=document.getElementById("dir").classList.toggle("filters-open");
-  this.setAttribute("aria-expanded",open);
-  this.querySelector("span").textContent = open?"−":"+";
-};
+initGlobe(); buildChips();
+document.getElementById("pick").onchange=e=>setCountry(e.target.value||null);
+document.getElementById("sort").onchange=e=>{sortMode=e.target.value;render();};
+document.getElementById("q").addEventListener("input",e=>{
+  const r=parseQuery(e.target.value);
+  qParsed={text:r.text,filters:r.filters};
+  if(r.country&&r.country!==country) setCountry(r.country,true);
+  render();
+});
+[...document.querySelectorAll("[data-eg]")].forEach(b=>b.onclick=()=>{
+  const el=document.getElementById("q"); el.value=b.dataset.eg;
+  el.dispatchEvent(new Event("input"));
+});
 
-fetch("/nb-data.json")
-  .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d=>ingest(d))
-  .catch(()=>ingest(FALLBACK));
+fetch("/nb-data.json").then(r=>{if(!r.ok)throw 0;return r.json();})
+  .then(ingest).catch(()=>{loadState="error";renderBrowse();});
 </script>
 </body>
 </html>
