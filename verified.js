@@ -276,15 +276,6 @@ const OFFICIAL = {
       "Sierra Leone","Somalia","Sudan","Suriname","eSwatini","Syria","Tajikistan","Tanzania","Togo",
       "Tonga","Tuvalu","Venezuela","Western Sahara","Yemen","Zimbabwe"]
   },
-  "Bybit": {
-    mode:"block", scope:"account", checked:"2026-05-07",
-    source:"https://www.bybit.com/en/help-center/article/Service-Restricted-Countries",
-    breadth:"Exchange open outside 13 excluded jurisdictions",
-    note:"This covers the exchange account. The card is separate and much narrower — Bybit's own card FAQ (10 Jun 2026) names Argentina, Australia, Brazil, Georgia, Kazakhstan, Mexico, Peru, the AIFC and an undefined “Asia Pacific” region. Because they never say which countries “Asia Pacific” means, card availability is left unconfirmed rather than guessed.",
-    conflictNote:"Third-party lists still say the card covers the EEA and Switzerland. Bybit's current card FAQ does not, and a separate article covers changes to EEA/CH card service. Treat EEA card access as unresolved.",
-    list:["United States","China","Hong Kong","Singapore","Canada","North Korea","Cuba","Iran",
-      "Uzbekistan","Ukraine","Sudan","Syria","United Arab Emirates"]
-  }
 };
 
 /* Issuers whose official page exists but publishes no country list at all.
@@ -294,6 +285,12 @@ const NO_LIST = {
     checked:"2026-06-26",
     source:"https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
     note:"KAST's own article is titled as if it lists the countries, then tells you to open the app and see whether your country appears in the sign-up dropdown. There is no published list. Anyone claiming a definitive KAST country list is not getting it from KAST."
+  },
+  "Bybit Card": {
+    checked:"2026-06-10",
+    source:"https://www.bybit.com/en/help-center/article/FAQ-Bybit-Card-General-Inquiries",
+    note:"Bybit publishes two different things and neither answers the question. The exchange has a restricted-jurisdictions list (13 places, read 7 May 2026) — but holding an account is not the same as getting the card. The card FAQ names Argentina, Australia, Brazil, Georgia, Kazakhstan, Mexico, Peru, the AIFC and an undefined “Asia Pacific”. They never say which countries “Asia Pacific” covers, so per-country card status is left unconfirmed instead of guessed.",
+    conflict:"Third-party lists still show the card across the EEA and Switzerland. Bybit's current card FAQ does not list the EEA, and a separate article covers changes to EEA/CH card service. Unresolved."
   }
 };
 Object.entries(OFFICIAL).forEach(([name,o])=>{
@@ -310,7 +307,8 @@ Object.entries(NO_LIST).forEach(([name,o])=>{
   const prev = VERIFIED_RAW[name] || {};
   VERIFIED_RAW[name] = Object.assign({}, prev, {
     nolist:true, tier:"official", confidence:"issuer-silent",
-    checked:o.checked, source:o.source, note:o.note
+    checked:o.checked, source:o.source, note:o.note,
+    conflict:o.conflict||null
   });
 });
 
