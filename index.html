@@ -749,7 +749,7 @@ function rowHTML(p){
   if(a.virtual) bits.push("virtual card");
   if(a.iban) bits.push("IBAN");
   if(a.selfcust) bits.push("your keys");
-  if(v) bits.push("works in "+reachTxt(v));
+  if(v) bits.push(v.nolist?"publishes no country list":"works in "+reachTxt(v));
   return '<button class="row'+(st==="blocked"||st==="nocard"?" off":"")+'" data-p="'+esc(p.name)+'">'+
     '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
       (st?'<span class="t '+STATUS_CLASS[st]+'">'+STATUS_LABEL[st]+'</span>':VTAG[vstate(p)])+'</span>'+
@@ -951,11 +951,31 @@ function openDetail(p,silent){
     :"Not published — this is the emptiest field in the whole dataset", !(p.services||[]).length);
 
   if(v){
-    h+=fld("Works in",'<div class="cl">'+v.list.slice().sort().map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join("")+'</div>'+
-      (v.note?'<p class="note">'+esc(v.note)+'</p>':'')+
-      (v.conflict?'<p class="note" style="color:var(--warn)"><b>Sources disagree:</b> '+esc(v.conflict)+'</p>':''));
-    h+=fld("What that list covers", v.scope==="card"
+    const chips=arr=>'<div class="cl">'+arr.slice().sort()
+      .map(c=>'<button data-c="'+esc(norm(c))+'">'+esc(c)+'</button>').join("")+'</div>';
+    const notes=(v.note?'<p class="note">'+esc(v.note)+'</p>':'')+
+      (v.conflict?'<p class="note" style="color:var(--warn)"><b>Sources disagree:</b> '+esc(v.conflict)+'</p>':'');
+    if(v.nolist){
+      h+=fld("Where it works","The company publishes no list."+notes, true);
+    } else if(v.mode==="block"){
+      /* never label a refusal list "works in" */
+      h+=fld("Turned away", chips(v.list)+notes);
+      h+=fld("Everywhere else","Open, as far as the company says. "+
+        v.list.length+" places are named above; the rest are not excluded.");
+    } else {
+      h+=fld("Works in", chips(v.list)+notes);
+      if(v.waitlist&&v.waitlist.length)
+        h+=fld("Announced, not live", chips(v.waitlist)+
+          '<p class="note">Waitlist only. No launch dates published.</p>');
+      if(v.usageBlocked&&v.usageBlocked.length)
+        h+=fld("Card blocked at the till", chips(v.usageBlocked)+
+          '<p class="note">Your account can be fine and the card still decline in these places — it matters if you travel.</p>');
+    }
+    h+=fld("What that list covers", v.nolist ? "Nothing — there is no list to cover anything."
+      : v.scope==="card"
       ? "Where the <b>card</b> is offered. Whether an account opens is a separate question this row does not answer."
+      : v.scope==="account"
+      ? "The <b>account</b>. Card availability is set separately and is usually narrower."
       : "The product as a whole.");
     h+=fld("Evidence", '<span class="t '+(v.tier==="official"?"ok":"rev")+'">'+
       ({official:"Official source",secondary:"Secondary source",directory:"Third-party directory"}[v.tier])+'</span>'+
