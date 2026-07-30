@@ -7,6 +7,7 @@
 <meta name="description" content="Find out which neobanks, cards and wallets work where you live, which ones will turn you down, and what they cost. Checked by hand, with sources and dates.">
 <meta property="og:title" content="Coverage">
 <meta property="og:description" content="Which fintech products actually work in your country.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><path fill='%2316202b' d='M26 0H120V94H94V120H0V26H26Z'/><path fill='%23f7f7f5' d='M92.77 82.94A40 40 0 1 1 92.77 37.06L81.3 45.08A26 26 0 1 0 81.3 74.92Z'/><circle cx='60' cy='60' r='11' fill='%23f7f7f5'/></svg>">
 <style>
   :root{
     --brand:#2c3644;
@@ -52,10 +53,14 @@
 
   .top{padding:16px var(--s5) 0}
   .brandrow{display:flex;justify-content:space-between;align-items:center;gap:14px}
-  .brand{font-size:19px;font-weight:500;letter-spacing:-.01em;text-transform:uppercase}
+  .brand{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:500;
+    letter-spacing:-.01em;text-transform:uppercase}
   .brand b{font-weight:500}
-  .brand span{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted);
-    text-transform:uppercase;margin-left:8px}
+  .brand #ver{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted);
+    text-transform:uppercase}
+  /* the mark: a boundary with a point inside it */
+  .mk{flex:0 0 auto;display:block;width:21px;height:21px;color:var(--ink)}
+  .mk-lg{width:44px;height:44px;margin-bottom:var(--s3)}
 
   /* country bar — the primary control */
   .cbar{margin-top:var(--s3);border:1px solid var(--rule);background:var(--card);display:flex;align-items:stretch}
@@ -240,6 +245,11 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="mk" viewBox="0 0 120 120">
+    <path fill="currentColor" fill-rule="evenodd" d="M26 0H120V94H94V120H0V26H26Z M92.77 82.94A40 40 0 1 1 92.77 37.06L81.3 45.08A26 26 0 1 0 81.3 74.92Z M60 49a11 11 0 1 0 0 22a11 11 0 1 0 0-22Z"/>
+  </symbol>
+</defs></svg>
 <div id="app">
 
   <section id="view">
@@ -253,7 +263,7 @@
   <aside id="dir">
     <div class="top">
       <div class="brandrow">
-        <div class="brand">Cover<b>age</b><span id="ver">48 of 114 checked</span></div>
+        <div class="brand"><svg class="mk" aria-hidden="true"><use href="#mk"/></svg><span class="wm">Cover<b>age</b></span><span id="ver">48 of 114 checked</span></div>
         <button class="chip" id="report-any">Report bad data</button>
       </div>
 
@@ -1174,7 +1184,8 @@ function ingest(data){
 }
 function showIntro(){
   document.getElementById("rows").innerHTML=
-    '<div class="intro"><h2>Finding a card that works where you live is harder than it should be.</h2>'+
+    '<div class="intro"><svg class="mk mk-lg" aria-hidden="true"><use href="#mk"/></svg>'+
+    '<h2>Finding a card that works where you live is harder than it should be.</h2>'+
     '<p>You find one you like. Then you get to the signup and it doesn\'t take your country. So you open another tab. Then another.</p>'+
     '<p class="q">Coverage is a list of neobanks, cards and wallets with the country question answered up front — where each one works, where it will refuse you, and what it costs.</p>'+
     '<button class="solid" id="i-go">Pick your country</button>'+
