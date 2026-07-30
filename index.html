@@ -589,14 +589,17 @@ document.getElementById("reset").onclick=()=>setCountry(null);
 document.getElementById("clear-c").onclick=()=>setCountry(null);
 
 /* ---------------- search: structured, not magic ---------------- */
+/* order matters: the most specific phrase wins before the generic one */
 const FILTER_WORDS=[
- [/virtual\s*card/,"virtual"],[/physical\s*card|metal\s*card/,"physical"],
- [/crypto\s*card/,"cryptocard"],[/\biban\b|bank\s*details/,"iban"],
- [/usd|multi[-\s]?currenc|foreign\s*currenc/,"multicur"],
- [/transfer|remit|send\s*money/,"transfers"],
- [/self[-\s]?custod|non[-\s]?custod|own\s*keys/,"selfcust"],
- [/no\s*kyc|without\s*kyc/,"nokyc"],[/cashback/,"cashback"],[/yield|interest|apy/,"yield"],
- [/stablecoin|usdc|usdt/,"stables"],[/wallet/,"_wallet"],[/card/,"card"]
+ [/virtual\s*cards?/,"virtual"],[/physical\s*cards?|metal\s*cards?/,"physical"],
+ [/crypto[-\s]?(cards?|friendly)|supports?\s*crypto/,"cryptocard"],
+ [/\biban\b|bank\s*details|account\s*details/,"iban"],
+ [/usd\s*accounts?|\busd\b|multi[-\s]?currenc\w*|foreign\s*currenc\w*|dollar\s*accounts?/,"multicur"],
+ [/transfers?|remit\w*|send\s*money/,"transfers"],
+ [/self[-\s]?custod\w*|non[-\s]?custod\w*|own\s*keys|your\s*keys/,"selfcust"],
+ [/no\s*kyc|without\s*kyc/,"nokyc"],[/cashbacks?/,"cashback"],
+ [/yield|interest|apy/,"yield"],[/stablecoins?|usdc|usdt/,"stables"],
+ [/wallets?/,"_wallet"],[/neobanks?|banks?|accounts?/,"_account"],[/cards?/,"card"]
 ];
 function parseQuery(raw){
   let s=" "+raw.toLowerCase().trim()+" ";
@@ -607,13 +610,16 @@ function parseQuery(raw){
     if(re.test(s)){ foundCountry=c; s=s.replace(re," "); break; }
   }
   FILTER_WORDS.forEach(([re,f])=>{ if(re.test(s)){ filters.add(f); s=s.replace(re," "); } });
-  s=s.replace(/\b(in|for|the|a|an|available|works?|with|and|that|me)\b/g," ").replace(/\s+/g," ").trim();
+  s=s.replace(/\b(in|for|the|a|an|available|works?|with|and|that|me|to|my|any|best)\b/g," ");
+  /* whatever survives is a name fragment; drop stubs left behind by the phrase strips */
+  s=s.split(/\s+/).filter(t=>t.length>2).join(" ");
   return {text:s,filters,country:foundCountry};
 }
 function matchesQuery(p){
   const a=p._a;
   for(const f of qParsed.filters){
     if(f==="_wallet"){ if(typeOf(p)!=="Wallet") return false; continue; }
+    if(f==="_account"){ if(!(a.iban||a.multicur)&&typeOf(p)!=="Account") return false; continue; }
     if(f==="card"){ if(!a.card) return false; continue; }
     if(!a[f]) return false;
   }
@@ -730,6 +736,10 @@ const NEEDS=[
  ["transfers","Send money abroad"],["selfcust","Keys stay with me"],
  ["nokyc","No KYC to hold funds"],["cashback","Cashback"],["yield","Interest on my balance"]
 ];
+/* short forms so the reason reads like a sentence, not a checkbox */
+const NEED_SHORT={virtual:"virtual cards",physical:"a physical card",cryptocard:"spending crypto",
+ iban:"IBAN details",multicur:"multiple currencies",transfers:"transfers abroad",
+ selfcust:"self-custody",nokyc:"no KYC",cashback:"cashback",yield:"yield"};
 function renderMatch(){
   const out=document.getElementById("match-out");
   if(!country){
@@ -754,13 +764,13 @@ function renderMatch(){
   const label=Object.fromEntries(NEEDS);
   out.innerHTML='<div class="grp">'+scored.length+' fit · best first</div>'+scored.slice(0,25).map(({p,st,hits})=>{
     const v=VERIFIED[p.name], miss=[...needs].filter(n=>!p._a[n]);
-    const why=(st==="verified"?"Works in "+country:"Listed for "+country+", unverified")+
-      " · "+hits.map(h=>label[h].toLowerCase()).join(", ");
+    const why=(st==="verified"?"Works in "+country:"Listed for "+country+", but unverified")+
+      " — does "+hits.map(h=>NEED_SHORT[h]).join(", ");
     return '<button class="row" data-p="'+esc(p.name)+'">'+
       '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
         (st==="verified"?'<span class="t ok">Works here</span>':'<span class="t rev">Unchecked</span>')+'</span>'+
       '<p class="why">'+esc(why)+'</p>'+
-      (miss.length?'<p class="why">Doesn\'t do: '+esc(miss.map(m=>label[m].toLowerCase()).join(", "))+'</p>':'')+
+      (miss.length?'<p class="why">No '+esc(miss.map(m=>NEED_SHORT[m]).join(", "))+'</p>':'')+
       ((v&&v.fee)?'<p class="why"><b>'+esc(v.fee)+'</b></p>':'')+
     '</button>';
   }).join("");
