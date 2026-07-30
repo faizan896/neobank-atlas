@@ -152,19 +152,57 @@ function DECODE(mask){
   return out;
 }
 
+/* ============================================================
+   SCOPE AND TIER — added after the 2026-07-30 accuracy audit
+   ------------------------------------------------------------
+   Two mistakes were baked into the earlier model:
+
+   1. SCOPE. Every list below came from a card availability
+      matrix or a card help article. It describes where the CARD
+      ships, not where the company operates. Merging the two made
+      the app claim Revolut doesn't work in the United States,
+      while Revolut runs a US help centre at help.revolut.com/en-US.
+      Every row is therefore scope:"card" until an account-level
+      source is found.
+
+   2. ABSENCE. Being missing from a third-party list is not
+      evidence of refusal. Reading it that way is what made the
+      app tell a Pakistani user that KAST and Bitget were closed
+      to them when both are sold there. Absence now only produces
+      a negative when the source is official; otherwise it is
+      "unknown".
+
+   TIER — how much weight a row carries
+     official   read from the company's own site, help centre or docs
+     secondary  a named, dated write-up; official page unreachable
+     directory  a structured third-party matrix
+
+   There is no numeric accuracy score. A score would imply a
+   measurement nobody has taken.
+   ============================================================ */
+const TIER = { issuer:"official", secondary:"secondary", directory:"directory" };
+
 const VERIFIED_RAW = {};
 PACKED.forEach(([name, slug, mask])=>{
   const list = DECODE(mask);
   const s = SOURCED[name] || {};
+  const conf = s.conf || "directory";
   VERIFIED_RAW[name] = {
     mode:"allow",
+    scope:"card",                       /* see note above */
+    tier: TIER[conf] || "directory",
     breadth: list.length + (list.length===1 ? " country" : " countries"),
     list,
     fee: s.fee || null,
     note: s.note || null,
     conflict: s.conflict || null,
     checked: "2026-07-29",
-    confidence: s.conf || "directory",
+    confidence: conf,
     source: s.src || ("https://www.cryptocardhub.com/card/" + slug)
   };
 });
+
+/* Sources that could not be read, recorded rather than quietly skipped. */
+const UNREACHABLE = {
+  "Wirex":"Official supported-countries page is a client-rendered Wix app with no readable content (checked 2026-07-30)."
+};
