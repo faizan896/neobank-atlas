@@ -486,9 +486,16 @@ function statusIn(p,c){
   if(!c) return v?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
   const ov=overrideFor(p.name,c); if(ov) return ov.state;
   if(v){
-    if(v.set.has(c)) return "verified";
+    const listed=v.set.has(c);
+    if(v.mode==="block"){
+      /* the list enumerates refusals */
+      if(listed) return "blocked";
+      return v.tier==="official" ? "verified" : "unknown";
+    }
+    /* the list enumerates where it works */
+    if(listed) return "verified";
     if(v.tier==="official") return v.scope==="card" ? "nocard" : "blocked";
-    return "unknown";                       /* not on a weak list ≠ refused */
+    return "unknown";                       /* absent from a weak list ≠ refused */
   }
   if(p._cov.set.has(c)) return "listed";
   if(p._cov.global) return "claim";
