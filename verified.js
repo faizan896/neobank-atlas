@@ -243,6 +243,57 @@ const OFFICIAL = {
       "France","Germany","Greece","Hungary","Iceland","Ireland","Italy","Latvia","Liechtenstein",
       "Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Cyprus","Romania","Slovakia",
       "Slovenia","Spain","Sweden"]
+  },
+  "Gnosis Pay": {
+    mode:"allow", scope:"all", checked:"2026-05-28",
+    source:"https://help.gnosispay.com/hc/en-us/articles/39401751918612-Eligible-Countries-for-Gnosis-Pay",
+    breadth:"Europe plus five Latin American countries",
+    note:"You have to be a legal resident, not just a citizen. French overseas territories are excluded. A second list of 22 countries blocks the card at point of sale even if your account is fine — so the card can stop working while you travel.",
+    list:["Argentina","Austria","Belgium","Bolivia","Bulgaria","Brazil","Colombia","Croatia","Cyprus",
+      "Czech Republic","Denmark","Estonia","Finland","France","Germany","Greece","Hungary","Iceland",
+      "Ireland","Italy","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Mexico","Netherlands",
+      "Norway","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden","Switzerland",
+      "United Kingdom"],
+    waitlist:["Australia","Bangladesh","Canada","Costa Rica","El Salvador","Ghana","Guatemala","Honduras",
+      "Japan","Kenya","Malaysia","Nigeria","Panama","Paraguay","Philippines","Rwanda","South Africa",
+      "Tanzania","Thailand","United Arab Emirates","Uganda","United States","Uruguay"],
+    usageBlocked:["Afghanistan","Belarus","Central African Republic","Cuba",
+      "Democratic Republic of the Congo","Haiti","Iran","Iraq","Lebanon","Libya","Mali","Myanmar",
+      "Nicaragua","North Korea","Russia","Somalia","South Sudan","Syria","Venezuela","Yemen","Zimbabwe"]
+  },
+  "Crypto.com": {
+    mode:"block", scope:"account", checked:"2026-05-12",
+    source:"https://help.crypto.com/en/articles/5792178-crypto-com-app-geo-restrictions",
+    breadth:"App open almost everywhere; the card is a separate, much shorter list",
+    note:"This is the app, not the card. Having an account says nothing about whether you can get the Visa card — that runs market by market and covers far fewer places. New York is excluded even though the rest of the US is not.",
+    list:["Afghanistan","Algeria","Andorra","Bangladesh","Belarus","Benin","Bolivia","Botswana",
+      "Burkina Faso","Myanmar","Burundi","Central African Republic","Chad","China","Comoros",
+      "Democratic Republic of the Congo","Republic of the Congo","Cook Islands","Cuba","Djibouti",
+      "Dominica","Equatorial Guinea","Eritrea","Ethiopia","Gabon","Gambia","Guinea","Guinea-Bissau",
+      "Guyana","Haiti","Indonesia","Iran","Iraq","Kiribati","North Korea","Kyrgyzstan","Lebanon",
+      "Lesotho","Libya","Macau","Malawi","Mali","Marshall Islands","Micronesia","Montserrat",
+      "Mozambique","Namibia","Nauru","Nepal","Niger","Palau","Palestine","Russia","Samoa",
+      "Sierra Leone","Somalia","Sudan","Suriname","eSwatini","Syria","Tajikistan","Tanzania","Togo",
+      "Tonga","Tuvalu","Venezuela","Western Sahara","Yemen","Zimbabwe"]
+  },
+  "Bybit": {
+    mode:"block", scope:"account", checked:"2026-05-07",
+    source:"https://www.bybit.com/en/help-center/article/Service-Restricted-Countries",
+    breadth:"Exchange open outside 13 excluded jurisdictions",
+    note:"This covers the exchange account. The card is separate and much narrower — Bybit's own card FAQ (10 Jun 2026) names Argentina, Australia, Brazil, Georgia, Kazakhstan, Mexico, Peru, the AIFC and an undefined “Asia Pacific” region. Because they never say which countries “Asia Pacific” means, card availability is left unconfirmed rather than guessed.",
+    conflictNote:"Third-party lists still say the card covers the EEA and Switzerland. Bybit's current card FAQ does not, and a separate article covers changes to EEA/CH card service. Treat EEA card access as unresolved.",
+    list:["United States","China","Hong Kong","Singapore","Canada","North Korea","Cuba","Iran",
+      "Uzbekistan","Ukraine","Sudan","Syria","United Arab Emirates"]
+  }
+};
+
+/* Issuers whose official page exists but publishes no country list at all.
+   Recorded because "they will not say" is itself an answer. */
+const NO_LIST = {
+  "KAST": {
+    checked:"2026-06-26",
+    source:"https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
+    note:"KAST's own article is titled as if it lists the countries, then tells you to open the app and see whether your country appears in the sign-up dropdown. There is no published list. Anyone claiming a definitive KAST country list is not getting it from KAST."
   }
 };
 Object.entries(OFFICIAL).forEach(([name,o])=>{
@@ -250,8 +301,16 @@ Object.entries(OFFICIAL).forEach(([name,o])=>{
   VERIFIED_RAW[name] = Object.assign({}, prev, o, {
     tier:"official", confidence:"issuer",
     fee: o.fee || prev.fee || null,
-    conflict: null,          /* resolved by going to the source */
+    /* only clear a flagged conflict if the source actually settled it */
+    conflict: o.conflictNote || null,
     supersedes: prev.source || null
+  });
+});
+Object.entries(NO_LIST).forEach(([name,o])=>{
+  const prev = VERIFIED_RAW[name] || {};
+  VERIFIED_RAW[name] = Object.assign({}, prev, {
+    nolist:true, tier:"official", confidence:"issuer-silent",
+    checked:o.checked, source:o.source, note:o.note
   });
 });
 
@@ -259,5 +318,8 @@ Object.entries(OFFICIAL).forEach(([name,o])=>{
 const UNREACHABLE = {
   "Wirex":"Official supported-countries page is a client-rendered Wix app with no readable content (checked 2026-07-30).",
   "Plutus (Zendesk mirror)":"support.plutus.it returns Cloudflare error 1014. The plutus.it/help page was used instead.",
-  "Nexo":"support.nexo.com does not resolve; the article is reachable only through search caches (checked 2026-07-30)."
+  "Nexo":"support.nexo.com does not resolve; the article is reachable only through search caches (checked 2026-07-30). Search snippets say the Nexo Card is EEA and UK only, but with no readable page and no country list, nothing is recorded per country."
 };
+Object.assign(UNREACHABLE, {
+  "Wirex (help centre)":"help.wirexapp.com returns Cloudflare error 1015 (rate limited) from every route tried (2026-07-30). The 23-vs-40 country conflict is still open."
+});

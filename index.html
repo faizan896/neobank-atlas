@@ -432,7 +432,18 @@ const ageDays=d=>Math.floor((Date.now()-new Date(d).getTime())/864e5);
 
 const VERIFIED={};
 if(typeof VERIFIED_RAW!=="undefined")
-  Object.entries(VERIFIED_RAW).forEach(([k,v])=>VERIFIED[k]=Object.assign({},v,{set:new Set((v.list||[]).map(norm))}));
+  Object.entries(VERIFIED_RAW).forEach(([k,v])=>VERIFIED[k]=Object.assign({},v,{
+    set:new Set((v.list||[]).map(norm)),
+    waitSet:new Set((v.waitlist||[]).map(norm)),
+    usageSet:new Set((v.usageBlocked||[]).map(norm))
+  }));
+/* An allow list counts coverage. A block list counts refusals. Reading the
+   second as the first is how a product that works nearly everywhere ends up
+   looking like it works in 13 countries. */
+const TOTAL_C=(typeof COUNTRY_DICT!=="undefined")?COUNTRY_DICT.length:230;
+const reachN=v=>v.nolist?0:(v.mode==="block"?TOTAL_C-v.list.length:v.list.length);
+const reachTxt=v=>v.nolist?"no published country list"
+  :(v.mode==="block"?"all but "+v.list.length+" countries":v.list.length+" countries");
 
 /* ---------------- derived attributes (only from real fields) ---------------- */
 function coverage(p){
@@ -483,9 +494,11 @@ function overrideFor(name,c){
    directory list means unknown — that mistake has already burned us. */
 function statusIn(p,c){
   const v=VERIFIED[p.name];
-  if(!c) return v?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
+  if(!c) return (v&&!v.nolist)?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
   const ov=overrideFor(p.name,c); if(ov) return ov.state;
   if(v){
+    /* issuer publishes no list — silence is not a refusal */
+    if(v.nolist) return "unknown";
     const listed=v.set.has(c);
     if(v.mode==="block"){
       /* the list enumerates refusals */
@@ -493,7 +506,8 @@ function statusIn(p,c){
       return v.tier==="official" ? "verified" : "unknown";
     }
     /* the list enumerates where it works */
-    if(listed) return "verified";
+    if(listed) return v.usageSet&&v.usageSet.has(c) ? "partial" : "verified";
+    if(v.waitSet&&v.waitSet.has(c)) return "waitlist";
     if(v.tier==="official") return v.scope==="card" ? "nocard" : "blocked";
     return "unknown";                       /* absent from a weak list ≠ refused */
   }
@@ -503,11 +517,11 @@ function statusIn(p,c){
 }
 const STATUS_LABEL={
   verified:"Works here", partial:"Works, with limits", nocard:"No card here",
-  blocked:"Not available", listed:"Company says yes", claim:"“Global” claim",
-  unknown:"Not confirmed"
+  blocked:"Not available", waitlist:"Waitlist only", listed:"Company says yes",
+  claim:"“Global” claim", unknown:"Not confirmed"
 };
 const STATUS_CLASS={verified:"ok",partial:"rev",nocard:"rev",blocked:"no",
-  listed:"",claim:"",unknown:"rev"};
+  waitlist:"rev",listed:"",claim:"",unknown:"rev"};
 /* verification state, independent of country */
 function vstate(p){
   const v=VERIFIED[p.name];
@@ -672,7 +686,9 @@ function render(){
 }
 function scoreOf(p){
   let s=0; const st=country?statusIn(p,country):null;
-  if(st==="verified") s+=100; else if(st==="listed") s+=40; else if(st==="claim") s+=10;
+  if(st==="verified") s+=100; else if(st==="partial") s+=70;
+  else if(st==="listed") s+=40; else if(st==="claim") s+=10;
+  else if(st==="waitlist") s-=60; else if(st==="nocard") s-=80;
   else if(st==="blocked") s-=100;
   if(VERIFIED[p.name]) s+=20;
   if(p.fx_markup||(VERIFIED[p.name]||{}).fee) s+=6;
@@ -685,7 +701,8 @@ function sortList(a){
   if(sortMode==="checked") return a.sort((x,y)=>(VERIFIED[y.name]?1:0)-(VERIFIED[x.name]?1:0));
   return a.sort((x,y)=>scoreOf(y)-scoreOf(x)||x.name.localeCompare(y.name));
 }
-const reachOf=p=>VERIFIED[p.name]?VERIFIED[p.name].list.length:(p._cov.set.size+(p._cov.global?1:0));
+const reachOf=p=>VERIFIED[p.name]&&!VERIFIED[p.name].nolist
+  ? reachN(VERIFIED[p.name]) : (p._cov.set.size+(p._cov.global?1:0));
 
 function renderBrowse(){
   const box=document.getElementById("rows");
@@ -710,6 +727,7 @@ function renderBrowse(){
     ? [["Confirmed to work here",p=>statusIn(p,country)==="verified"],
        ["Works, with limits",p=>statusIn(p,country)==="partial"],
        ["Card doesn't reach here",p=>statusIn(p,country)==="nocard"],
+       ["Announced, waitlist only",p=>statusIn(p,country)==="waitlist"],
        ["Company claims it, nobody has checked",p=>["listed","claim"].includes(statusIn(p,country))],
        ["Not confirmed either way",p=>statusIn(p,country)==="unknown"],
        ["Officially ruled out",p=>statusIn(p,country)==="blocked"]]
@@ -731,7 +749,7 @@ function rowHTML(p){
   if(a.virtual) bits.push("virtual card");
   if(a.iban) bits.push("IBAN");
   if(a.selfcust) bits.push("your keys");
-  if(v) bits.push("works in "+v.list.length+" countries");
+  if(v) bits.push("works in "+reachTxt(v));
   return '<button class="row'+(st==="blocked"||st==="nocard"?" off":"")+'" data-p="'+esc(p.name)+'">'+
     '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
       (st?'<span class="t '+STATUS_CLASS[st]+'">'+STATUS_LABEL[st]+'</span>':VTAG[vstate(p)])+'</span>'+
@@ -785,7 +803,7 @@ function renderMatch(){
     const st=statusIn(p,country);
     const hits=[...needs].filter(n=>p._a[n]);
     return {p,st,hits};
-  }).filter(x=>x.st&&x.st!=="blocked"&&x.hits.length)
+  }).filter(x=>x.st&&x.st!=="blocked"&&x.st!=="waitlist"&&x.hits.length)
     .sort((a,b)=>(b.hits.length-a.hits.length)||
       ((b.st==="verified")-(a.st==="verified"))||scoreOf(b.p)-scoreOf(a.p));
 
@@ -877,10 +895,12 @@ function openDetail(p,silent){
     const TIERTXT={official:"the company's own site or help centre",
       secondary:"a named secondary write-up (official page unreachable)",
       directory:"a third-party card directory"};
+    const SCOPETXT={card:"where the card is offered",account:"the account, not the card",all:"the product"};
     h+='<b>'+({verified:"Yes — confirmed for "+esc(country),
       partial:"Yes, but not the whole product",
       nocard:"The card doesn't reach "+esc(country),
       blocked:"No — "+esc(p.name)+" rules out "+esc(country),
+      waitlist:"Announced for "+esc(country)+", not live",
       listed:"The company lists "+esc(country)+" — unchecked",
       claim:"Only a blanket “global” claim",
       unknown:"Not confirmed either way"}[st]||"Not confirmed")+'</b>';
@@ -888,20 +908,32 @@ function openDetail(p,silent){
         ? esc(ov.why||("Listed for "+country+" on a country-specific source."))+
           ' <br><span class="note">Checked '+esc(ov.o.checked)+' · '+esc(ov.o.why)+
           ' · <a href="'+esc(ov.o.source)+'" target="_blank" rel="noopener noreferrer">source</a></span>'
-      : st==="verified"?"From "+TIERTXT[v.tier]+", read on "+esc(v.checked)+". That list covers "+
-        (v.scope==="card"?"where the card is offered":"the product")+"."
+      : st==="verified"?(v.mode==="block"
+          ? esc(country)+" is absent from the company's own exclusion list, read on "+esc(v.checked)+
+            ". That list covers "+(SCOPETXT[v.scope]||"the product")+"."
+          : "From "+TIERTXT[v.tier]+", read on "+esc(v.checked)+". That list covers "+
+            (SCOPETXT[v.scope]||"the product")+".")
+      : st==="partial"?"On the company's supported list, but "+esc(country)+" also appears on its "+
+        "card-usage restriction list — the account opens, the card can decline at the till."
+      : st==="waitlist"?"The company names "+esc(country)+" as coming soon and takes waitlist signups. "+
+        "Nothing is live yet, and no launch date is published."
       : st==="nocard"?"The company's own card list doesn't include "+esc(country)+
         ". An account may still open — that's a separate question nobody has answered here."
+      : st==="unknown"&&v&&v.nolist?"The company publishes no country list at all. Its help page tells you "+
+        "to open the app and see whether "+esc(country)+" appears at sign-up. Read on "+esc(v.checked)+"."
       : st==="unknown"?esc(country)+" isn't on the "+TIERTXT[v?v.tier:"directory"]+
         " that was read on "+esc(v?v.checked:"—")+". A third-party list leaving a country out is not the same as the company refusing it, so this stays unconfirmed."
-      : st==="blocked"?"The company states it does not serve "+esc(country)+"."
+      : st==="blocked"?(v&&v.mode==="block"
+          ? "The company names "+esc(country)+" on its own restricted-jurisdictions list."
+          : esc(country)+" is not on the company's own supported list, and that list is exhaustive.")
       : "The company publishes "+(p._cov.global?'a blanket “global” claim with no country list':'no country list')+
        ", and nobody has checked it.")+'</p>';
+    if(v&&v.conflict) h+='<p class="note">Unresolved: '+esc(v.conflict)+'</p>';
   } else {
     h+='<b>Pick a country to get a straight answer</b><p>Everything below is what the product does in general.</p>';
   }
   h+='<div class="tags">'+VTAG[vstate(p)]+
-    (v?'<span class="t hard">'+v.list.length+' countries</span>':'')+
+    (v?'<span class="t hard">'+esc(reachTxt(v))+'</span>':'')+
     (a.virtual?'<span class="t">Virtual card</span>':'')+
     (a.iban?'<span class="t">IBAN</span>':'')+
     (a.selfcust?'<span class="t">Self-custody</span>':'')+'</div></div>';
@@ -994,8 +1026,12 @@ function openCompare(){
     '<tr><th></th>'+list.map(p=>'<td class="nm">'+esc(p.name)+'</td>').join("")+'</tr>'+
     (country?row("In "+esc(country),p=>{const s=statusIn(p,country);
       return s==="verified"?'<span class="t ok">Works</span>':s==="partial"?'<span class="t rev">Limited</span>':
+        s==="waitlist"?'<span class="t rev">Waitlist</span>':s==="nocard"?'<span class="t rev">No card</span>':
         s==="blocked"?'<span class="t no">No</span>':'<span class="t rev">Unchecked</span>';}):"")+
-    row("Countries",p=>{const v=VERIFIED[p.name];return v?v.list.length:(p._cov.global?"“Global”":p._cov.set.size||"—");})+
+    row("Countries",p=>{const v=VERIFIED[p.name];
+      if(!v||v.nolist) return p._cov.global?"“Global”":(p._cov.set.size||"—");
+      /* a block list counts refusals, not coverage — never show it as a coverage number */
+      return v.mode==="block"?"All but "+v.list.length:v.list.length;})+
     row("Costs",p=>{const v=VERIFIED[p.name];const f=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup);
       return f?esc(f):'<span class="t rev">Unknown</span>';})+
     row("Card",p=>esc([p.card_network,p.card_type].filter(Boolean).join(" · ")||"None"))+
