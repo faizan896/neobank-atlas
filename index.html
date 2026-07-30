@@ -62,6 +62,16 @@
   .mk{flex:0 0 auto;display:block;width:21px;height:21px;color:var(--ink)}
   .mk-lg{width:44px;height:44px;margin-bottom:var(--s3)}
 
+  /* product logos — favicon if it loads, monogram if it doesn't */
+  .lg{position:relative;flex:0 0 auto;width:30px;height:30px;border:1px solid var(--rule);
+    background:var(--paper);display:grid;place-items:center;overflow:hidden}
+  .lg i{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:500;
+    letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
+  .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:4px;
+    background:var(--paper)}
+  .lg-lg{width:44px;height:44px}
+  .lg-lg i{font-size:17px}
+
   /* country bar — the primary control */
   .cbar{margin-top:var(--s3);border:1px solid var(--rule);background:var(--card);display:flex;align-items:stretch}
   .cbar label{flex:0 0 auto;padding:12px 0 12px 14px;font-family:var(--mono);font-size:10px;
@@ -116,7 +126,8 @@
   .row:hover{background:#eeeee7}
   .row.off{opacity:.62}
   .row.off:hover{opacity:1}
-  .rt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .rt{display:flex;justify-content:space-between;align-items:center;gap:11px}
+  .rt>h3{flex:1;min-width:0}
   .row h3{margin:0;font-size:15.5px;font-weight:400;letter-spacing:-.005em;line-height:1.25}
   .row .why{margin:5px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
   .row .why b{color:var(--ink);font-weight:400}
@@ -449,7 +460,8 @@ if(typeof VERIFIED_RAW!=="undefined")
   Object.entries(VERIFIED_RAW).forEach(([k,v])=>VERIFIED[k]=Object.assign({},v,{
     set:new Set((v.list||[]).map(norm)),
     waitSet:new Set((v.waitlist||[]).map(norm)),
-    usageSet:new Set((v.usageBlocked||[]).map(norm))
+    usageSet:new Set((v.usageBlocked||[]).map(norm)),
+    limits:Object.fromEntries(Object.entries(v.limits||{}).map(([k,t])=>[norm(k),t]))
   }));
 /* An allow list counts coverage. A block list counts refusals. Reading the
    second as the first is how a product that works nearly everywhere ends up
@@ -506,13 +518,21 @@ function overrideFor(name,c){
 /* Status taxonomy. "blocked" is only ever produced by an official
    source that enumerates where it does NOT serve. Absence from a
    directory list means unknown — that mistake has already burned us. */
+/* A self-custody app with no KYC has no country gate to fail. There is no
+   signup to be refused at, so "not confirmed" was never the right answer —
+   it just made 13 products look riskier than the ones that can reject you. */
+function noGate(p){
+  return p.kyc==="No" && p._a.selfcust && !p.card_network;
+}
 function statusIn(p,c){
   const v=VERIFIED[p.name];
+  if(c && !v && noGate(p)) return "nogate";
   if(!c) return (v&&!v.nolist)?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
   const ov=overrideFor(p.name,c); if(ov) return ov.state;
   if(v){
     /* issuer publishes no list — silence is not a refusal */
     if(v.nolist) return "unknown";
+    if(v.limits&&v.limits[c]) return "partial";
     const listed=v.set.has(c);
     if(v.mode==="block"){
       /* the list enumerates refusals */
@@ -532,10 +552,10 @@ function statusIn(p,c){
 const STATUS_LABEL={
   verified:"Works here", partial:"Works, with limits", nocard:"No card here",
   blocked:"Not available", waitlist:"Waitlist only", listed:"Company says yes",
-  claim:"“Global” claim", unknown:"Not confirmed"
+  claim:"“Global” claim", unknown:"Not confirmed", nogate:"No signup to fail"
 };
 const STATUS_CLASS={verified:"ok",partial:"rev",nocard:"rev",blocked:"no",
-  waitlist:"rev",listed:"",claim:"",unknown:"rev"};
+  waitlist:"rev",listed:"",claim:"",unknown:"rev",nogate:"ok"};
 /* verification state, independent of country */
 function vstate(p){
   const v=VERIFIED[p.name];
@@ -768,6 +788,7 @@ function renderBrowse(){
 
   const groups=country
     ? [["Confirmed to work here",p=>statusIn(p,country)==="verified"],
+       ["No signup, so nothing to refuse you",p=>statusIn(p,country)==="nogate"],
        ["Works, with limits",p=>statusIn(p,country)==="partial"],
        ["Card doesn't reach here",p=>statusIn(p,country)==="nocard"],
        ["Announced, waitlist only",p=>statusIn(p,country)==="waitlist"],
@@ -785,6 +806,18 @@ function renderBrowse(){
   box.innerHTML=html;
   [...box.querySelectorAll("[data-p]")].forEach(el=>el.onclick=()=>openDetail(ALL.find(x=>x.name===el.dataset.p)));
 }
+/* Favicon from the product's own domain, monogram underneath if it 404s.
+   No logo CDN, no API key, nothing to rot. */
+function domainOf(p){
+  const d=p.domain||p.website||"";
+  return d.replace(/^https?:\/\//,"").replace(/^www\./,"").split("/")[0].trim();
+}
+function logoHTML(p,big){
+  const d=domainOf(p), mono=esc((p.name||"?").replace(/[^A-Za-z0-9]/g,"").slice(0,2)||"?");
+  return '<span class="lg'+(big?" lg-lg":"")+'"><i>'+mono+'</i>'+
+    (d?'<img src="https://icons.duckduckgo.com/ip3/'+esc(d)+'.ico" alt="" loading="lazy" '+
+       'onerror="this.remove()">':'')+'</span>';
+}
 function rowHTML(p){
   const st=country?statusIn(p,country):null, v=VERIFIED[p.name], a=p._a;
   const fee=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup)||null;
@@ -794,7 +827,7 @@ function rowHTML(p){
   if(a.selfcust) bits.push("your keys");
   if(v) bits.push(v.nolist?"publishes no country list":"works in "+reachTxt(v));
   return '<button class="row'+(st==="blocked"||st==="nocard"?" off":"")+'" data-p="'+esc(p.name)+'">'+
-    '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
+    '<span class="rt">'+logoHTML(p)+'<h3>'+esc(p.name)+'</h3>'+
       (st?'<span class="t '+STATUS_CLASS[st]+'">'+STATUS_LABEL[st]+'</span>':VTAG[vstate(p)])+'</span>'+
     '<p class="why">'+esc(bits.join(" · "))+'</p>'+
     (fee?'<p class="why"><b>'+esc(fee)+'</b></p>':'')+
@@ -1038,7 +1071,9 @@ function openDetail(p,silent){
   if(!p) return;
   selected=p;
   const v=VERIFIED[p.name], a=p._a, st=country?statusIn(p,country):null;
-  document.getElementById("d-name").textContent=p.name;
+  document.getElementById("d-name").innerHTML=
+    '<span style="display:flex;align-items:center;gap:12px">'+logoHTML(p,true)+
+    '<span>'+esc(p.name)+'</span></span>';
   document.getElementById("d-sub").textContent=[typeOf(p),p.hq&&p.hq!=="—"?p.hq:null,
     p.founded?"since "+p.founded:null].filter(Boolean).join(" · ");
 
@@ -1052,6 +1087,7 @@ function openDetail(p,silent){
       directory:"a third-party card directory"};
     const SCOPETXT={card:"where the card is offered",account:"the account, not the card",all:"the product"};
     h+='<b>'+({verified:"Yes — confirmed for "+esc(country),
+      nogate:"Yes — there is no country check to fail",
       partial:"Yes, but not the whole product",
       nocard:"The card doesn't reach "+esc(country),
       blocked:"No — "+esc(p.name)+" rules out "+esc(country),
@@ -1068,6 +1104,10 @@ function openDetail(p,silent){
             ". That list covers "+(SCOPETXT[v.scope]||"the product")+"."
           : "From "+TIERTXT[v.tier]+", read on "+esc(v.checked)+". That list covers "+
             (SCOPETXT[v.scope]||"the product")+".")
+      : st==="nogate"?"Self-custody with no KYC. There is no account to open and no country field to "+
+        "fail, so it runs wherever you can install it. What can still bite you is the cash-out: "+
+        "getting money from here into a "+esc(country)+" bank account is a separate problem."
+      : st==="partial"&&v&&v.limits&&v.limits[country]?esc(v.limits[country])
       : st==="partial"?"On the company's supported list, but "+esc(country)+" also appears on its "+
         "card-usage restriction list — the account opens, the card can decline at the till."
       : st==="waitlist"?"The company names "+esc(country)+" as coming soon and takes waitlist signups. "+

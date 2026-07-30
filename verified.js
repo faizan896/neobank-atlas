@@ -254,6 +254,7 @@ const OFFICIAL = {
       "Ireland","Italy","Latvia","Liechtenstein","Lithuania","Luxembourg","Malta","Mexico","Netherlands",
       "Norway","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden","Switzerland",
       "United Kingdom"],
+    limits:{},
     waitlist:["Australia","Bangladesh","Canada","Costa Rica","El Salvador","Ghana","Guatemala","Honduras",
       "Japan","Kenya","Malaysia","Nigeria","Panama","Paraguay","Philippines","Rwanda","South Africa",
       "Tanzania","Thailand","United Arab Emirates","Uganda","United States","Uruguay"],
@@ -276,6 +277,24 @@ const OFFICIAL = {
       "Sierra Leone","Somalia","Sudan","Suriname","eSwatini","Syria","Tajikistan","Tanzania","Togo",
       "Tonga","Tuvalu","Venezuela","Western Sahara","Yemen","Zimbabwe"]
   },
+  "Bitget Card": {
+    mode:"block", scope:"card", checked:"2025-12-23",
+    source:"https://www.bitget.com/support/articles/12560603840909",
+    breadth:"Open outside 27 countries — but invitation only",
+    note:"Read the first line of their own page: the card is for VIP customers, by invitation. Every country list is academic until you get an invite. Bitget also runs two lists — the physical card is blocked in more places than the virtual one — so “available” depends on which card you mean.",
+    fee:"First virtual and physical card free · replacement fees apply",
+    /* the VIRTUAL card block list — the narrower of Bitget's two */
+    list:["India","Indonesia","Turkey","Vietnam","Russia","Ukraine","Venezuela","Afghanistan",
+      "Belarus","Central African Republic","Democratic Republic of the Congo","Cuba","Iran","Iraq",
+      "North Korea","Myanmar","Somalia","South Sudan","Sudan","Syria","Republic of the Congo",
+      "Hong Kong","United States","Chile","Israel","Nepal","China"],
+    /* blocked for the physical card only — these read as "works, with limits" */
+    limits:{
+      "Pakistan":"Virtual card only. Bitget accepts a Pakistani ID but not a Pakistani proof of address for the physical card, and will not ship here.",
+      "Nigeria":"Virtual card only. Nigerian ID accepted, but no physical card and no delivery to Nigeria.",
+      "Saudi Arabia":"Virtual card only. Saudi ID accepted, but no physical card and no delivery to Saudi Arabia."
+    }
+  }
 };
 
 /* Issuers whose official page exists but publishes no country list at all.
