@@ -527,12 +527,15 @@ function vstate(p){
   const v=VERIFIED[p.name];
   if(reportsFor(p.name).length) return "reported";
   if(!v) return "unchecked";
+  /* the source was read; it just refused to say anything */
+  if(v.nolist) return "silent";
   if(ageDays(v.checked)>STALE) return "stale";
   return "verified";
 }
 const VTAG={verified:'<span class="t ok">Verified</span>',
   stale:'<span class="t rev">Possibly outdated</span>',
   reported:'<span class="t rep">Reported</span>',
+  silent:'<span class="t rev">Company won’t say</span>',
   unchecked:'<span class="t rev">Needs checking</span>'};
 
 const reportsFor=(n,c)=>LS.get("cov_reports",[]).filter(r=>r.provider===n&&(!c||r.country===c));
