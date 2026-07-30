@@ -202,7 +202,62 @@ PACKED.forEach(([name, slug, mask])=>{
   };
 });
 
+/* ============================================================
+   OFFICIAL ROWS — read from the company's own help centre.
+   These replace the directory row entirely. Scope is "all"
+   because each of these pages governs registration / use of the
+   service, not merely where a card ships.
+   Method that found them: site-restricted search, then read the
+   page. Guessing help-centre URLs does not work; every provider
+   structures theirs differently.
+   ============================================================ */
+const OFFICIAL = {
+  "RedotPay": {
+    mode:"block", scope:"all", checked:"2026-07-30",
+    source:"https://helpcenter.redotpay.com/en/articles/10339263-unsupported-countries-regions",
+    breadth:"Open everywhere except 41 listed countries",
+    note:"Their page states these block KYC by citizenship, not residence. Separate articles cover card issuance and card delivery limits, which are narrower again.",
+    fee:"Virtual card $5 · physical $100 · no annual fee",
+    list:["Afghanistan","Albania","Belarus","Bosnia and Herzegovina","Bouvet Island","Burkina Faso",
+      "Burundi","Central African Republic","China","Democratic Republic of the Congo","Croatia","Cuba",
+      "Eritrea","Ethiopia","Guinea-Bissau","Haiti","Iran","Iraq","Kosovo","Lebanon","Liberia","Libya",
+      "Mali","Montenegro","Myanmar","Nicaragua","North Korea","North Macedonia","Russia","Serbia",
+      "Slovenia","Somalia","South Sudan","Sudan","Syria","Ukraine","United States","Venezuela","Yemen",
+      "Zimbabwe"]
+  },
+  "Uphold": {
+    mode:"block", scope:"all", checked:"2026-07-30",
+    source:"https://support.uphold.com/hc/en-us/articles/360026786712-Is-my-location-supported",
+    breadth:"Open in most markets, with two separate restriction tiers",
+    note:"Uphold splits this in two: places it offers nothing at all (listed here), and a much longer list where it will not open NEW accounts — including most of the EU. Check your own country before relying on this.",
+    list:["Anguilla","Armenia","Azerbaijan","Barbados","Belarus","Bouvet Island","Cambodia","Canada",
+      "Central African Republic","Chad","Cuba","Eritrea","Fiji","Guinea","Iran","Lebanon","Liberia",
+      "Mali","Mauritania","North Korea","Palau","Russia","Samoa","South Sudan","Sudan","Syria","Vanuatu"]
+  },
+  "Plutus": {
+    mode:"allow", scope:"all", checked:"2026-07-30",
+    source:"https://www.plutus.it/help/currently-supported-countries",
+    breadth:"UK and the EEA only",
+    note:"Requires legal residence in one of these countries.",
+    list:["United Kingdom","Austria","Belgium","Bulgaria","Croatia","Czech Republic","Denmark","Finland",
+      "France","Germany","Greece","Hungary","Iceland","Ireland","Italy","Latvia","Liechtenstein",
+      "Lithuania","Luxembourg","Malta","Netherlands","Poland","Portugal","Cyprus","Romania","Slovakia",
+      "Slovenia","Spain","Sweden"]
+  }
+};
+Object.entries(OFFICIAL).forEach(([name,o])=>{
+  const prev = VERIFIED_RAW[name] || {};
+  VERIFIED_RAW[name] = Object.assign({}, prev, o, {
+    tier:"official", confidence:"issuer",
+    fee: o.fee || prev.fee || null,
+    conflict: null,          /* resolved by going to the source */
+    supersedes: prev.source || null
+  });
+});
+
 /* Sources that could not be read, recorded rather than quietly skipped. */
 const UNREACHABLE = {
-  "Wirex":"Official supported-countries page is a client-rendered Wix app with no readable content (checked 2026-07-30)."
+  "Wirex":"Official supported-countries page is a client-rendered Wix app with no readable content (checked 2026-07-30).",
+  "Plutus (Zendesk mirror)":"support.plutus.it returns Cloudflare error 1014. The plutus.it/help page was used instead.",
+  "Nexo":"support.nexo.com does not resolve; the article is reachable only through search caches (checked 2026-07-30)."
 };
