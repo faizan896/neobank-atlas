@@ -112,6 +112,37 @@ const SOURCED = {
    src:"https://www.coinbase.com/card", note:"US: available everywhere except Hawaii."}
 };
 
+/* ============================================================
+   COUNTRY OVERRIDES
+   ------------------------------------------------------------
+   A single global allow-list is the wrong shape and it got things
+   wrong. Two failures found on 2026-07-29:
+
+   · A provider's published "restricted countries" page can be out
+     of date, or scoped to one product rather than the whole app.
+     KAST's list named Pakistan; five KAST card tiers are in fact
+     sold there.
+   · "Available" in a card directory is narrower than "can I sign
+     up". RedotPay's matrix omits Pakistan, but Pakistani passports
+     clear its KYC — you just can't get a physical card.
+
+   So availability is per country, and it is not a yes/no. These
+   entries beat the global list, carry their own source, and can
+   mark a product `partial` with the reason.
+   ============================================================ */
+const OVERRIDES = {
+  "Pakistan": {
+    checked:"2026-07-29",
+    source:"https://www.spendnode.io/crypto-cards/country/pakistan/",
+    why:"Country-specific card listing, cross-checked against RedotPay's KYC requirements.",
+    available:["Avici","Bitget Wallet","Crypto.com","Cypher","EtherFi Cash","KAST","Kolo",
+               "Oobit","Payy","Plasma One","Rizon","Tria","Tuyo","XPlace"],
+    partial:{
+      "RedotPay":"Virtual card only. Pakistani passports clear KYC, but no physical card is shipped and there's no ATM access."
+    }
+  }
+};
+
 /* ---- decode ---- */
 function DECODE(mask){
   const bin = atob(mask), out = [];

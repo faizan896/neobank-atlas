@@ -469,10 +469,19 @@ function typeOf(p){
   if(a.iban||a.multicur) return "Account";
   return "App";
 }
-/* status of a product for a country */
+/* status of a product for a country.
+   A country override beats the global list — it was checked closer to the ground. */
+const OV=(typeof OVERRIDES!=="undefined")?OVERRIDES:{};
+function overrideFor(name,c){
+  const o=OV[c]; if(!o) return null;
+  if(o.partial&&o.partial[name]) return {state:"partial",why:o.partial[name],o};
+  if((o.available||[]).includes(name)) return {state:"verified",why:null,o};
+  return null;
+}
 function statusIn(p,c){
   const v=VERIFIED[p.name];
   if(!c) return v?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
+  const ov=overrideFor(p.name,c); if(ov) return ov.state;
   if(v) return v.set.has(c)?"verified":"blocked";
   if(p._cov.set.has(c)) return "listed";
   if(p._cov.global) return "claim";
@@ -576,7 +585,7 @@ function syncCountry(){
   if(on){
     const s={verified:0,blocked:0,other:0};
     ALL.forEach(p=>{const st=statusIn(p,country);
-      if(st==="verified")s.verified++; else if(st==="blocked")s.blocked++; else if(st)s.other++;});
+      if(st==="verified"||st==="partial")s.verified++; else if(st==="blocked")s.blocked++; else if(st)s.other++;});
     document.getElementById("a-y").textContent=s.verified;
     document.getElementById("a-n").textContent=s.blocked;
     document.getElementById("a-u").textContent=s.other;
@@ -676,6 +685,7 @@ function renderBrowse(){
 
   const groups=country
     ? [["Works here",p=>statusIn(p,country)==="verified"],
+       ["Works, with limits",p=>statusIn(p,country)==="partial"],
        ["Listed, but nobody has checked",p=>["listed","claim"].includes(statusIn(p,country))],
        ["Will turn you down",p=>statusIn(p,country)==="blocked"]]
     : [["All products",()=>true]];
@@ -700,6 +710,7 @@ function rowHTML(p){
   return '<button class="row'+(st==="blocked"?" off":"")+'" data-p="'+esc(p.name)+'">'+
     '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
       (st==="verified"?'<span class="t ok">Works here</span>':
+       st==="partial"?'<span class="t rev">Works, with limits</span>':
        st==="blocked"?'<span class="t no">Not here</span>':
        st?'<span class="t rev">Unchecked</span>':VTAG[vstate(p)])+'</span>'+
     '<p class="why">'+esc(bits.join(" · "))+'</p>'+
@@ -753,7 +764,8 @@ function renderMatch(){
     const hits=[...needs].filter(n=>p._a[n]);
     return {p,st,hits};
   }).filter(x=>x.st&&x.st!=="blocked"&&x.hits.length)
-    .sort((a,b)=>(b.hits.length-a.hits.length)||(b.st==="verified")-(a.st==="verified")||scoreOf(b.p)-scoreOf(a.p));
+    .sort((a,b)=>(b.hits.length-a.hits.length)||
+      ((b.st==="verified")-(a.st==="verified"))||scoreOf(b.p)-scoreOf(a.p));
 
   if(!scored.length){
     const blocked=ALL.filter(p=>statusIn(p,country)==="blocked"&&[...needs].some(n=>p._a[n])).length;
@@ -764,7 +776,9 @@ function renderMatch(){
   const label=Object.fromEntries(NEEDS);
   out.innerHTML='<div class="grp">'+scored.length+' fit · best first</div>'+scored.slice(0,25).map(({p,st,hits})=>{
     const v=VERIFIED[p.name], miss=[...needs].filter(n=>!p._a[n]);
-    const why=(st==="verified"?"Works in "+country:"Listed for "+country+", but unverified")+
+    const why=(st==="verified"?"Works in "+country
+      :st==="partial"?"Works in "+country+", with limits"
+      :"Listed for "+country+", but unverified")+
       " — does "+hits.map(h=>NEED_SHORT[h]).join(", ");
     return '<button class="row" data-p="'+esc(p.name)+'">'+
       '<span class="rt"><h3>'+esc(p.name)+'</h3>'+
@@ -836,14 +850,21 @@ function openDetail(p,silent){
   let h="";
   /* the answer, first */
   h+='<div class="verdict">';
+  const ov=overrideFor(p.name,country);
   if(country){
     h+='<b>'+(st==="verified"?"Yes — this works in "+esc(country)
+      :st==="partial"?"Yes, but not the whole product"
       :st==="blocked"?"No — "+esc(p.name)+" does not serve "+esc(country)
       :"Nobody has checked "+esc(country)+" yet")+'</b>';
-    h+='<p>'+(st==="verified"?"Confirmed against "+(v.confidence==="issuer"?"the issuer's own documentation":
+    h+='<p>'+(ov
+        ? esc(ov.why||("Listed for "+country+" on a country-specific source."))+
+          ' <br><span class="note">Checked '+esc(ov.o.checked)+' · '+esc(ov.o.why)+
+          ' · <a href="'+esc(ov.o.source)+'" target="_blank" rel="noopener noreferrer">source</a></span>'
+      : st==="verified"?"Confirmed against "+(v.confidence==="issuer"?"the issuer's own documentation":
         v.confidence==="secondary"?"a secondary source":"a structured country matrix")+" on "+esc(v.checked)+"."
-      :st==="blocked"?"It is not on the availability list that was checked on "+esc(v.checked)+"."
-      :"The company publishes "+(p._cov.global?'a blanket “global” claim with no country list':'no country list')+
+      : st==="blocked"?"It is not on the availability list that was checked on "+esc(v.checked)+
+        ". If you use it there, say so — country lists like this have already been wrong."
+      : "The company publishes "+(p._cov.global?'a blanket “global” claim with no country list':'no country list')+
        ", and it hasn't been checked by hand.")+'</p>';
   } else {
     h+='<b>Pick a country to get a straight answer</b><p>Everything below is what the product does in general.</p>';
@@ -936,8 +957,8 @@ function openCompare(){
   document.getElementById("c-body").innerHTML='<table class="cmp">'+
     '<tr><th></th>'+list.map(p=>'<td class="nm">'+esc(p.name)+'</td>').join("")+'</tr>'+
     (country?row("In "+esc(country),p=>{const s=statusIn(p,country);
-      return s==="verified"?'<span class="t ok">Works</span>':s==="blocked"?'<span class="t no">No</span>':
-        '<span class="t rev">Unchecked</span>';}):"")+
+      return s==="verified"?'<span class="t ok">Works</span>':s==="partial"?'<span class="t rev">Limited</span>':
+        s==="blocked"?'<span class="t no">No</span>':'<span class="t rev">Unchecked</span>';}):"")+
     row("Countries",p=>{const v=VERIFIED[p.name];return v?v.list.length:(p._cov.global?"“Global”":p._cov.set.size||"—");})+
     row("Costs",p=>{const v=VERIFIED[p.name];const f=(v&&v.fee)||(p.fx_markup&&p.fx_markup.markup);
       return f?esc(f):'<span class="t rev">Unknown</span>';})+
