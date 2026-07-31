@@ -499,6 +499,21 @@ function attrs(p){
     yield:     !!p.yield
   };
 }
+/* Tri-state, because a false here means two different things. Most of these
+   are read off `services`, which only 24 of 368 base entities populate. If
+   there is no services list, "no IBAN" is not a fact about the product — it
+   is a fact about the dataset, and filtering it away silently hides products
+   that may well qualify. null = nobody knows. */
+const SERVICE_ATTRS=new Set(["iban","multicur","transfers","cryptocard","virtual"]);
+function attrState(p,k){
+  const a=p._a;
+  if(a[k]) return true;
+  if(SERVICE_ATTRS.has(k)&&!(p.services||[]).length&&!p.card_type) return null;
+  if(k==="selfcust"&&!p.custody) return null;
+  if(k==="nokyc"&&!p.kyc) return null;
+  if((k==="cashback"||k==="yield")&&!p.services&&!p[k]) return null;
+  return false;
+}
 function typeOf(p){
   const a=p._a;
   if(a.card) return "Card";
@@ -731,7 +746,10 @@ function matchesQuery(p){
     if(f==="card"){ if(!a.card) return false; continue; }
     if(!a[f]) return false;
   }
-  for(const f of activeChips) if(!a[f]&&!(f==="verified"&&VERIFIED[p.name])) return false;
+  for(const f of activeChips){
+    if(f==="verified"){ if(!VERIFIED[p.name]) return false; continue; }
+    if(attrState(p,f)!==true) return false;
+  }
   if(qParsed.text){
     const hay=(p.name+" "+(p.hq||"")+" "+(p.card_network||"")+" "+(p.note||"")).toLowerCase();
     if(!qParsed.text.split(" ").every(t=>hay.includes(t))) return false;
@@ -784,7 +802,27 @@ function renderBrowse(){
   document.getElementById("count").textContent=
     list.length+(list.length===1?" product":" products")+(country?" · "+country:"");
 
-  if(!list.length){ box.innerHTML=emptyCopy(); wireEmpty(); return; }
+  /* How many products this filter threw away for lack of data, not for
+     failing the test. Hiding that number is how a filter starts lying. */
+  const filtering=[...activeChips].filter(f=>f!=="verified").concat([...qParsed.filters]);
+  let unknownN=0;
+  if(filtering.length) unknownN=ALL.filter(p=>{
+    if(country&&!statusIn(p,country)) return false;
+    let anyNull=false;
+    for(const f of filtering){
+      const s=attrState(p,f);
+      if(s===false) return false;
+      if(s===null) anyNull=true;
+    }
+    return anyNull;
+  }).length;
+  if(unknownN){
+    const note=document.getElementById("count");
+    note.textContent=note.textContent+"  ·  "+unknownN+" unknown";
+    note.title=unknownN+" more products might qualify — the dataset has no value for that field either way.";
+  }
+
+  if(!list.length){ box.innerHTML=emptyCopy(unknownN); wireEmpty(); return; }
 
   const groups=country
     ? [["Confirmed to work here",p=>statusIn(p,country)==="verified"],
@@ -837,10 +875,13 @@ function rowHTML(p){
       (reportsFor(p.name,country).length?'<span class="t rep">'+reportsFor(p.name,country).length+' report</span>':'')+
     '</span></button>';
 }
-function emptyCopy(){
+function emptyCopy(unknownN){
   if(qParsed.text||qParsed.filters.size||activeChips.size)
-    return '<div class="empty"><b>Nothing matched that.</b><br>Try dropping a word, or clear the filters.'+
-      '<br><button class="solid" id="e-clear">Clear search and filters</button></div>';
+    return '<div class="empty"><b>Nothing confirmed matches that.</b><br>'+
+      (unknownN?unknownN+' product'+(unknownN===1?'':'s')+' might qualify, but the dataset records '+
+        'nothing either way for that field — so they are not being claimed as matches.<br>':
+        'Try dropping a word, or clear the filters.')+
+      '<button class="solid" id="e-clear">Clear search and filters</button></div>';
   if(country)
     return '<div class="empty"><b>No product in the list mentions '+esc(country)+'.</b><br>'+
       'Usually that means nobody has checked, not that nothing works. '+
