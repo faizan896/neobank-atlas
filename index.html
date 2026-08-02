@@ -293,7 +293,7 @@
       <nav class="tabs" role="tablist">
         <button id="t-browse" class="on">Products</button>
         <button id="t-match">Find a match</button>
-        <button id="t-changes">What changed</button>
+        <button id="t-changes">What changed<span class="n" id="chg-n"></span></button>
         <button id="t-track">Tracking<span class="n" id="trk-n"></span></button>
         <button id="t-data">Data health<span class="n" id="dh-n"></span></button>
       </nav>
@@ -948,22 +948,58 @@ function renderMatch(){
   [...out.querySelectorAll("[data-p]")].forEach(el=>el.onclick=()=>openDetail(ALL.find(x=>x.name===el.dataset.p)));
 }
 
-/* ---------------- changes ---------------- */
+/* ---------------- changes ----------------
+   Written by scripts/monitor.mjs on a schedule, committed back to the
+   repo, read here. The directory is the archive; this is the news. */
+let FEED={events:[],runs:0,checked:0,unreachable:[],generated:null};
+function loadFeed(){
+  return fetch("changes.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null)
+    .then(j=>{ if(j) FEED=j; }).catch(()=>{});
+}
+/* Anything the checker moved in the last 14 days is news. */
+function syncFeedBadge(){
+  const el=document.getElementById("chg-n"); if(!el) return;
+  const cut=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+  const n=(FEED.events||[]).filter(e=>e.d>=cut).length;
+  el.textContent=n?"("+n+")":"";
+}
 function renderChanges(){
   const mine=LS.get("cov_reports",[]).map(r=>({d:r.at.slice(0,10),p:r.provider,
     t:"You reported: "+({works:"it works in ",blocked:"it refused ",kyc:"KYC rejected in ",
       card_no:"no card in ",fee_diff:"different fees in ",gone:"stopped working in ",other:"an issue in "}[r.outcome]||"")+r.country,
     s:"Your report",u:null}));
-  const all=[...mine,...CHANGES].sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+  const auto=(FEED.events||[]);
+  const all=[...mine,...auto,...CHANGES].sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+
+  const head=FEED.runs
+    ? '<b>'+FEED.checked+' sources re-read every Monday.</b><br>'+
+      'Run '+FEED.runs+(FEED.generated?', last on '+esc(FEED.generated.slice(0,10)):'')+'. '+
+      'The checker reports what <i>moved</i>, not what is true — every row below still wants a human to confirm it.'
+    : '<b>The weekly check has not run yet.</b><br>'+
+      'Once it does, every country that appears or disappears on an official page lands here with a date and a link.';
+
+  const chips=a=>a&&a.length
+    ? '<span class="tags">'+a.slice(0,14).map(c=>'<span class="t">'+esc(c)+'</span>').join("")+
+      (a.length>14?'<span class="t">+'+(a.length-14)+'</span>':'')+'</span>' : '';
+
   document.getElementById("changes-out").innerHTML=
-    '<div class="empty" style="padding-bottom:0"><b>What moved recently.</b><br>'+
-    'Only things with a source. Per-product history needs snapshots over time — see the note at the bottom.</div>'+
-    all.map(c=>'<div class="row" style="cursor:default">'+
-      '<span class="rt"><h3>'+esc(c.t)+'</h3><span class="t">'+esc(c.d)+'</span></span>'+
-      '<p class="why">'+(c.p?esc(c.p)+" · ":"")+esc(c.s)+
-        (c.u?' · <a href="'+esc(c.u)+'" target="_blank" rel="noopener noreferrer">source</a>':'')+'</p></div>').join("")+
-    '<div class="empty">Coverage started tracking on 2026-07-29, so there is no deep history yet. '+
-    'From here, every re-check writes a dated row.</div>';
+    '<div class="empty" style="padding-bottom:0;text-align:left">'+head+'</div>'+
+    (all.length
+      ? all.map(c=>'<div class="row" style="cursor:default">'+
+          '<span class="rt"><h3>'+esc(c.t)+'</h3><span class="t'+(c.suspect?" no":"")+'">'+esc(c.d)+'</span></span>'+
+          '<p class="why">'+(c.p?esc(c.p)+" · ":"")+esc(c.s)+
+            (c.u?' · <a href="'+esc(c.u)+'" target="_blank" rel="noopener noreferrer">source</a>':'')+'</p>'+
+          (c.added&&c.added.length?'<p class="why">Appeared</p>'+chips(c.added):'')+
+          (c.removed&&c.removed.length?'<p class="why">Gone</p>'+chips(c.removed):'')+
+          '</div>').join("")
+      : '<div class="empty">Nothing has moved yet.</div>')+
+    ((FEED.unreachable||[]).length
+      ? '<h3 style="margin:var(--s4) 0 var(--s2);font-size:14px;font-weight:500">Could not be read this run · '+
+        FEED.unreachable.length+'</h3>'+
+        FEED.unreachable.map(u=>'<div class="row" style="cursor:default"><span class="rt"><h3>'+
+          esc(u.product)+'</h3><span class="t rev">Blocked</span></span>'+
+          '<p class="why">'+esc(u.why)+'</p></div>').join("")
+      : '');
 }
 
 /* ---------------- tracking ---------------- */
@@ -1405,6 +1441,7 @@ function ingest(data){
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
   syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint();
+  loadFeed().then(()=>{ if(tab==="changes") renderChanges(); syncFeedBadge(); });
   const p=q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
   if(!country&&!p) showIntro();
 }
