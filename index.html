@@ -303,13 +303,8 @@
     <div class="pane" id="p-browse">
       <div class="srch">
         <label class="sr" for="q">Search</label>
-        <input id="q" placeholder="Try: virtual cards in Pakistan" autocomplete="off">
-        <div class="hint">
-          Try
-          <button data-eg="virtual cards in Pakistan">virtual cards in Pakistan</button> ·
-          <button data-eg="crypto cards Germany">crypto cards Germany</button> ·
-          <button data-eg="self custody wallets">self custody wallets</button>
-        </div>
+        <input id="q" placeholder="Try: virtual cards with no KYC" autocomplete="off">
+        <div class="hint" id="egs">Try …</div>
         <div class="chips" id="chips"></div>
       </div>
       <div class="bar">
@@ -689,6 +684,7 @@ function setCountry(name,silent){
 }
 function syncCountry(){
   const on=!!country;
+  if(typeof buildExamples==="function"&&ALL.length) buildExamples();
   document.getElementById("s-scope").textContent=on?country.toUpperCase():"PICK A COUNTRY";
   document.getElementById("reset").classList.toggle("on",on);
   document.getElementById("clear-c").hidden=!on;
@@ -1437,7 +1433,7 @@ function ingest(data){
   ALL=ents.map(e=>{e._cov=coverage(e); e._a=attrs(e); return e;});
   document.getElementById("ver").textContent=Object.keys(VERIFIED).length+" of "+ALL.length+" checked";
   loadState="ready";
-  fillCountries(); buildChips();
+  fillCountries(); buildChips(); buildExamples();
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
   syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint();
@@ -1471,10 +1467,32 @@ document.getElementById("q").addEventListener("input",e=>{
   if(r.country&&r.country!==country) setCountry(r.country,true);
   render();
 });
-[...document.querySelectorAll("[data-eg]")].forEach(b=>b.onclick=()=>{
-  const el=document.getElementById("q"); el.value=b.dataset.eg;
-  el.dispatchEvent(new Event("input"));
-});
+/* Examples used to be hardcoded to two countries, which quietly told
+   every visitor the tool was built for somewhere else. Once a country
+   is picked the examples use it; before that they rotate across regions
+   so no single market anchors the product. */
+const EG_ANY=["self custody wallets","cards with no KYC","USD accounts","cashback on stablecoins",
+  "physical card, low FX","IBAN and multi-currency"];
+const EG_SEED=["Nigeria","Brazil","Vietnam","Germany","Argentina","Indonesia","Egypt","Philippines",
+  "Turkey","Mexico","Kenya","India","Pakistan","Bangladesh","Colombia","Morocco","Ukraine","Thailand"];
+function buildExamples(){
+  const box=document.getElementById("egs"); if(!box) return;
+  const pick=(a,n)=>a.slice().sort(()=>Math.random()-.5).slice(0,n);
+  let egs;
+  if(country){
+    egs=["virtual cards in "+country,"crypto cards "+country,"self custody wallets"];
+  }else{
+    const cs=pick(EG_SEED.filter(c=>!ALL.length||worksIn(c)>0),2);
+    egs=[...cs.map(c=>"virtual cards in "+c),...pick(EG_ANY,1)];
+  }
+  const q=document.getElementById("q");
+  if(q) q.placeholder="Try: "+egs[0];
+  box.innerHTML="Try "+egs.map(e=>'<button data-eg="'+esc(e)+'">'+esc(e)+"</button>").join(" · ");
+  [...box.querySelectorAll("[data-eg]")].forEach(b=>b.onclick=()=>{
+    const el=document.getElementById("q"); el.value=b.dataset.eg;
+    el.dispatchEvent(new Event("input"));
+  });
+}
 
 fetch("/nb-data.json").then(r=>{if(!r.ok)throw 0;return r.json();})
   .then(ingest).catch(()=>{loadState="error";renderBrowse();});
