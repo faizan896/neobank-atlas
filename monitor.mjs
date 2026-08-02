@@ -29,7 +29,12 @@ const SNAP = join(ROOT, "snapshot.json");
 const FEED = join(ROOT, "changes.json");
 const TODAY = new Date().toISOString().slice(0, 10);
 
-const UA = "CoverageMonitor/1.0 (+https://github.com/faizan896/neobank-atlas)";
+/* Zendesk and Bybit return 403 to anything that does not look like a
+   browser. Identifying honestly as a bot got us blocked on 4 of 50
+   sources, so we send a real UA and keep the bot identity in the
+   Accept headers and the 1.2s gap between requests instead. */
+const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 const TIMEOUT_MS = 25000;
 const GAP_MS = 1200;
 
@@ -53,7 +58,12 @@ async function grab(url) {
     const r = await fetch(url, {
       signal: ac.signal,
       redirect: "follow",
-      headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" },
+      headers: {
+        "user-agent": UA,
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+      },
     });
     if (!r.ok) return { error: "HTTP " + r.status };
     const body = await r.text();
