@@ -1,7 +1,28 @@
 {
-  "generated": null,
-  "runs": 0,
-  "checked": 0,
-  "unreachable": [],
+  "generated": "2026-08-02T09:55:30.409Z",
+  "runs": 1,
+  "checked": 50,
+  "unreachable": [
+    {
+      "product": "Bybit Card",
+      "url": "https://www.bybit.com/en/help-center/article/FAQ-Bybit-Card-General-Inquiries",
+      "why": "HTTP 403"
+    },
+    {
+      "product": "Gnosis Pay",
+      "url": "https://help.gnosispay.com/hc/en-us/articles/39401751918612-Eligible-Countries-for-Gnosis-Pay",
+      "why": "HTTP 403"
+    },
+    {
+      "product": "KAST",
+      "url": "https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
+      "why": "HTTP 403"
+    },
+    {
+      "product": "Uphold",
+      "url": "https://support.uphold.com/hc/en-us/articles/360026786712-Is-my-location-supported",
+      "why": "HTTP 403"
+    }
+  ],
   "events": []
 }
