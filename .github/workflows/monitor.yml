@@ -1,0 +1,38 @@
+name: Availability monitor
+
+# Every Monday 06:00 UTC. Run it by hand from the Actions tab any time.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Test the parser before trusting it
+        run: node extract.test.mjs
+
+      - name: Check every official source
+        run: node monitor.mjs
+
+      - name: Commit whatever moved
+        run: |
+          git config user.name  "coverage-monitor"
+          git config user.email "monitor@users.noreply.github.com"
+          git add snapshot.json changes.json
+          if git diff --staged --quiet; then
+            echo "Nothing changed this week."
+          else
+            git commit -m "Monitor: $(date -u +%Y-%m-%d)"
+            git push
+          fi
