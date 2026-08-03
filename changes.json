@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-02T10:03:52.393Z",
-  "runs": 2,
+  "generated": "2026-08-03T09:52:16.173Z",
+  "runs": 3,
   "checked": 50,
   "unreachable": [
     {
@@ -24,5 +24,50 @@
       "why": "HTTP 403"
     }
   ],
-  "events": []
+  "events": [
+    {
+      "d": "2026-08-03",
+      "p": "EtherFi Cash",
+      "t": "Country list changed — 6 appeared, 26 disappeared",
+      "s": "Automated check",
+      "u": "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
+      "added": [
+        "Bangladesh",
+        "Colombia",
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "South Africa"
+      ],
+      "removed": [
+        "Austria",
+        "Belgium",
+        "Bulgaria",
+        "Croatia",
+        "Cyprus",
+        "Czech Republic",
+        "Denmark",
+        "Egypt",
+        "France",
+        "Germany",
+        "Greece",
+        "Ireland",
+        "Italy",
+        "Latvia",
+        "Lithuania",
+        "Luxembourg",
+        "Malta",
+        "Myanmar",
+        "Poland",
+        "Portugal",
+        "Romania",
+        "Slovakia",
+        "Slovenia",
+        "Spain",
+        "Sweden",
+        "United Kingdom"
+      ],
+      "suspect": false
+    }
+  ]
 }
