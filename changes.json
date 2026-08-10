@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-03T09:52:16.173Z",
-  "runs": 3,
+  "generated": "2026-08-10T07:47:27.314Z",
+  "runs": 4,
   "checked": 50,
   "unreachable": [
     {
@@ -19,12 +19,191 @@
       "why": "HTTP 403"
     },
     {
+      "product": "Nexo",
+      "url": "https://supportedcountries.com/nexo-card/",
+      "why": "fetch failed"
+    },
+    {
       "product": "Uphold",
       "url": "https://support.uphold.com/hc/en-us/articles/360026786712-Is-my-location-supported",
       "why": "HTTP 403"
     }
   ],
   "events": [
+    {
+      "d": "2026-08-10",
+      "p": "Avici",
+      "t": "Country list changed — 2 appeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/avici-card",
+      "added": [
+        "Jersey",
+        "Sri Lanka"
+      ],
+      "removed": [],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "EtherFi Cash",
+      "t": "Country list changed — 1 appeared, 6 disappeared",
+      "s": "Automated check",
+      "u": "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
+      "added": [
+        "Morocco"
+      ],
+      "removed": [
+        "Bangladesh",
+        "Colombia",
+        "Indonesia",
+        "Malaysia",
+        "Philippines",
+        "South Africa"
+      ],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "Exa",
+      "t": "Country list changed — 6 appeared, 17 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/exa-card",
+      "added": [
+        "Côte d'Ivoire",
+        "Malaysia",
+        "Morocco",
+        "Senegal",
+        "Uganda",
+        "Zambia"
+      ],
+      "removed": [
+        "Afghanistan",
+        "Bulgaria",
+        "Central African Republic",
+        "Chile",
+        "Congo",
+        "Croatia",
+        "Democratic Republic of the Congo",
+        "Ethiopia",
+        "Lebanon",
+        "Libya",
+        "Mali",
+        "Puerto Rico",
+        "Somalia",
+        "South Sudan",
+        "Sudan",
+        "Yemen",
+        "Zimbabwe"
+      ],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "MetaMask",
+      "t": "Country list changed — 15 appeared, 6 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/metamask-card",
+      "added": [
+        "Andorra",
+        "Bahrain",
+        "Chile",
+        "Costa Rica",
+        "Dominican Republic",
+        "El Salvador",
+        "Gibraltar",
+        "Guatemala",
+        "Guernsey",
+        "Isle of Man",
+        "Jersey",
+        "Monaco",
+        "Oman",
+        "Panama",
+        "Uruguay"
+      ],
+      "removed": [
+        "Czech Republic",
+        "Estonia",
+        "Hong Kong",
+        "Latvia",
+        "Lithuania",
+        "Singapore"
+      ],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "Oobit",
+      "t": "Country list changed — 7 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/oobit-card",
+      "added": [],
+      "removed": [
+        "Andorra",
+        "Austria",
+        "Côte d'Ivoire",
+        "Democratic Republic of the Congo",
+        "Palestine",
+        "Puerto Rico",
+        "Zambia"
+      ],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "Rizon",
+      "t": "Country list changed — 2 appeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/rizon-card",
+      "added": [
+        "Kosovo",
+        "North Korea"
+      ],
+      "removed": [],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "Tria",
+      "t": "Country list changed — 2 appeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/tria-card",
+      "added": [
+        "Hong Kong",
+        "Italy"
+      ],
+      "removed": [],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "Tuyo",
+      "t": "Country list changed — 3 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/tuyo-card",
+      "added": [],
+      "removed": [
+        "Anguilla",
+        "Croatia",
+        "Singapore"
+      ],
+      "suspect": false
+    },
+    {
+      "d": "2026-08-10",
+      "p": "XPlace",
+      "t": "Country list changed — 1 appeared, 3 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/xplace-card",
+      "added": [
+        "North Korea"
+      ],
+      "removed": [
+        "Aruba",
+        "Cayman Islands",
+        "Taiwan"
+      ],
+      "suspect": false
+    },
     {
       "d": "2026-08-03",
       "p": "EtherFi Cash",

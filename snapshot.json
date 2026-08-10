@@ -1,10 +1,10 @@
 {
-  "runs": 3,
-  "at": "2026-08-03",
+  "runs": 4,
+  "at": "2026-08-10",
   "seen": {
     "Ready": {
       "url": "https://www.cryptocardhub.com/card/ready-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 202,
       "list": [
         "Afghanistan",
@@ -213,7 +213,7 @@
     },
     "1inch Card": {
       "url": "https://www.cryptocardhub.com/card/1inch-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 39,
       "list": [
         "Australia",
@@ -259,7 +259,7 @@
     },
     "Avalanche Card": {
       "url": "https://www.cryptocardhub.com/card/avalanche-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 188,
       "list": [
         "Afghanistan",
@@ -454,8 +454,8 @@
     },
     "Avici": {
       "url": "https://www.cryptocardhub.com/card/avici-card",
-      "at": "2026-08-03",
-      "count": 69,
+      "at": "2026-08-10",
+      "count": 71,
       "list": [
         "Antigua and Barbuda",
         "Argentina",
@@ -492,6 +492,7 @@
         "Israel",
         "Italy",
         "Japan",
+        "Jersey",
         "Kenya",
         "Malaysia",
         "Mexico",
@@ -512,6 +513,7 @@
         "Senegal",
         "Singapore",
         "South Africa",
+        "Sri Lanka",
         "Suriname",
         "Thailand",
         "Trinidad and Tobago",
@@ -530,7 +532,7 @@
     },
     "Binance Card": {
       "url": "https://www.cryptocardhub.com/card/binance-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 40,
       "list": [
         "Armenia",
@@ -577,7 +579,7 @@
     },
     "Bitget Wallet": {
       "url": "https://web3.bitget.com/card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 26,
       "list": [
         "Argentina",
@@ -610,7 +612,7 @@
     },
     "Bitpanda": {
       "url": "https://www.cryptocardhub.com/card/bitpanda-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 32,
       "list": [
         "Australia",
@@ -649,7 +651,7 @@
     },
     "BitPay Card": {
       "url": "https://www.cryptocardhub.com/card/bitpay-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 1,
       "list": [
         "United States"
@@ -657,7 +659,7 @@
     },
     "Bleap": {
       "url": "https://www.bleap.finance/en-us/legal-agreements/bleap-cardholder-terms-eea",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 48,
       "list": [
         "Afghanistan",
@@ -712,7 +714,7 @@
     },
     "Bybit Card": {
       "url": "https://www.bybit.com/en/help-center/article/FAQ-Bybit-Card-General-Inquiries",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 7,
       "list": [
         "Argentina",
@@ -726,7 +728,7 @@
     },
     "CEX.IO Card": {
       "url": "https://www.cryptocardhub.com/card/cex-io-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 37,
       "list": [
         "Australia",
@@ -770,7 +772,7 @@
     },
     "COCA": {
       "url": "https://www.spendnode.io/crypto-cards/coca/",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 82,
       "list": [
         "Andorra",
@@ -868,7 +870,7 @@
     },
     "Crypto.com": {
       "url": "https://help.crypto.com/en/articles/5792178-crypto-com-app-geo-restrictions",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 70,
       "list": [
         "Afghanistan",
@@ -945,7 +947,7 @@
     },
     "Cypher": {
       "url": "https://www.cryptocardhub.com/card/cypher-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 206,
       "list": [
         "Afghanistan",
@@ -1158,7 +1160,7 @@
     },
     "Decaf": {
       "url": "https://www.cryptocardhub.com/card/decaf-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 193,
       "list": [
         "Afghanistan",
@@ -1358,28 +1360,23 @@
     },
     "EtherFi Cash": {
       "url": "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
-      "at": "2026-08-03",
-      "count": 24,
+      "at": "2026-08-10",
+      "count": 19,
       "list": [
-        "Bangladesh",
         "Belarus",
         "China",
-        "Colombia",
         "Estonia",
         "Finland",
         "Georgia",
         "Hungary",
         "India",
-        "Indonesia",
         "Iraq",
         "Israel",
-        "Malaysia",
         "Mexico",
+        "Morocco",
         "Nepal",
         "Netherlands",
-        "Philippines",
         "Russia",
-        "South Africa",
         "Turkey",
         "Ukraine",
         "United States",
@@ -1389,10 +1386,9 @@
     },
     "Exa": {
       "url": "https://www.cryptocardhub.com/card/exa-card",
-      "at": "2026-08-03",
-      "count": 77,
+      "at": "2026-08-10",
+      "count": 66,
       "list": [
-        "Afghanistan",
         "Antigua and Barbuda",
         "Argentina",
         "Australia",
@@ -1403,21 +1399,15 @@
         "Belize",
         "Bolivia",
         "Brazil",
-        "Bulgaria",
         "Canada",
         "Cayman Islands",
-        "Central African Republic",
-        "Chile",
         "China",
         "Colombia",
-        "Congo",
         "Costa Rica",
-        "Croatia",
-        "Democratic Republic of the Congo",
+        "Côte d'Ivoire",
         "Dominican Republic",
         "Ecuador",
         "El Salvador",
-        "Ethiopia",
         "France",
         "Germany",
         "Ghana",
@@ -1432,10 +1422,9 @@
         "Japan",
         "Jersey",
         "Kenya",
-        "Lebanon",
-        "Libya",
-        "Mali",
+        "Malaysia",
         "Mexico",
+        "Morocco",
         "Myanmar",
         "Nepal",
         "New Zealand",
@@ -1446,20 +1435,18 @@
         "Paraguay",
         "Peru",
         "Philippines",
-        "Puerto Rico",
         "Russia",
         "Saint Kitts and Nevis",
         "Saint Lucia",
         "Saint Vincent and the Grenadines",
+        "Senegal",
         "Singapore",
-        "Somalia",
         "South Africa",
-        "South Sudan",
-        "Sudan",
         "Suriname",
         "Trinidad and Tobago",
         "Turkey",
         "Turks and Caicos Islands",
+        "Uganda",
         "Ukraine",
         "United Arab Emirates",
         "United Kingdom",
@@ -1467,13 +1454,12 @@
         "Uruguay",
         "Venezuela",
         "Vietnam",
-        "Yemen",
-        "Zimbabwe"
+        "Zambia"
       ]
     },
     "Fold": {
       "url": "https://www.cryptocardhub.com/card/fold-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 193,
       "list": [
         "Afghanistan",
@@ -1673,7 +1659,7 @@
     },
     "Gemini Credit Card": {
       "url": "https://www.cryptocardhub.com/card/gemini-credit-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 197,
       "list": [
         "Afghanistan",
@@ -1877,7 +1863,7 @@
     },
     "Holyheld": {
       "url": "https://www.cryptocardhub.com/card/holyheld-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 42,
       "list": [
         "Afghanistan",
@@ -1926,7 +1912,7 @@
     },
     "Hyperbeat": {
       "url": "https://www.cryptocardhub.com/card/hyperbeat-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 195,
       "list": [
         "Afghanistan",
@@ -2128,7 +2114,7 @@
     },
     "Kolo": {
       "url": "https://www.cryptocardhub.com/card/kolo-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 192,
       "list": [
         "Afghanistan",
@@ -2327,7 +2313,7 @@
     },
     "Krak": {
       "url": "https://www.cryptocardhub.com/card/krak-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 191,
       "list": [
         "Afghanistan",
@@ -2525,44 +2511,52 @@
     },
     "MetaMask": {
       "url": "https://www.cryptocardhub.com/card/metamask-card",
-      "at": "2026-08-03",
-      "count": 43,
+      "at": "2026-08-10",
+      "count": 52,
       "list": [
+        "Andorra",
         "Argentina",
         "Australia",
         "Austria",
+        "Bahrain",
         "Belgium",
         "Brazil",
         "Bulgaria",
         "Canada",
+        "Chile",
         "Colombia",
+        "Costa Rica",
         "Croatia",
         "Cyprus",
-        "Czech Republic",
         "Denmark",
-        "Estonia",
+        "Dominican Republic",
+        "El Salvador",
         "Finland",
         "France",
         "Germany",
+        "Gibraltar",
         "Greece",
-        "Hong Kong",
+        "Guatemala",
+        "Guernsey",
         "Hungary",
         "Iceland",
         "Ireland",
+        "Isle of Man",
         "Italy",
         "Japan",
-        "Latvia",
+        "Jersey",
         "Liechtenstein",
-        "Lithuania",
         "Luxembourg",
         "Malta",
         "Mexico",
+        "Monaco",
         "Netherlands",
         "Norway",
+        "Oman",
+        "Panama",
         "Poland",
         "Portugal",
         "Romania",
-        "Singapore",
         "Slovakia",
         "Slovenia",
         "South Korea",
@@ -2570,7 +2564,8 @@
         "Sweden",
         "Switzerland",
         "United Kingdom",
-        "United States"
+        "United States",
+        "Uruguay"
       ]
     },
     "Nexo": {
@@ -2612,23 +2607,22 @@
         "Switzerland",
         "United Kingdom",
         "United States"
-      ]
+      ],
+      "staleSince": "2026-08-10"
     },
     "Oobit": {
       "url": "https://www.cryptocardhub.com/card/oobit-card",
-      "at": "2026-08-03",
-      "count": 191,
+      "at": "2026-08-10",
+      "count": 184,
       "list": [
         "Afghanistan",
         "Albania",
         "Algeria",
-        "Andorra",
         "Angola",
         "Antigua and Barbuda",
         "Argentina",
         "Armenia",
         "Australia",
-        "Austria",
         "Azerbaijan",
         "Bahamas",
         "Bahrain",
@@ -2661,8 +2655,6 @@
         "Croatia",
         "Cyprus",
         "Czech Republic",
-        "Côte d'Ivoire",
-        "Democratic Republic of the Congo",
         "Denmark",
         "Djibouti",
         "Dominica",
@@ -2748,7 +2740,6 @@
         "Oman",
         "Pakistan",
         "Palau",
-        "Palestine",
         "Panama",
         "Papua New Guinea",
         "Paraguay",
@@ -2756,7 +2747,6 @@
         "Philippines",
         "Poland",
         "Portugal",
-        "Puerto Rico",
         "Qatar",
         "Romania",
         "Russia",
@@ -2808,13 +2798,12 @@
         "Vatican City",
         "Venezuela",
         "Vietnam",
-        "Zambia",
         "Zimbabwe"
       ]
     },
     "Payy": {
       "url": "https://www.cryptocardhub.com/card/payy-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 227,
       "list": [
         "Afghanistan",
@@ -3048,7 +3037,7 @@
     },
     "Phantom": {
       "url": "https://www.cryptocardhub.com/card/phantom-cash-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 2,
       "list": [
         "United Kingdom",
@@ -3057,7 +3046,7 @@
     },
     "Plasma One": {
       "url": "https://www.plasma.org/personal",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 1,
       "list": [
         "United Kingdom"
@@ -3065,7 +3054,7 @@
     },
     "RedotPay": {
       "url": "https://helpcenter.redotpay.com/en/articles/10339263-unsupported-countries-regions",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 37,
       "list": [
         "Afghanistan",
@@ -3109,7 +3098,7 @@
     },
     "Revolut": {
       "url": "https://www.cryptocardhub.com/card/revolut-crypto-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 50,
       "list": [
         "Australia",
@@ -3166,8 +3155,8 @@
     },
     "Rizon": {
       "url": "https://www.cryptocardhub.com/card/rizon-card",
-      "at": "2026-08-03",
-      "count": 191,
+      "at": "2026-08-10",
+      "count": 193,
       "list": [
         "Afghanistan",
         "Albania",
@@ -3257,6 +3246,7 @@
         "Kazakhstan",
         "Kenya",
         "Kiribati",
+        "Kosovo",
         "Kuwait",
         "Kyrgyzstan",
         "Laos",
@@ -3294,6 +3284,7 @@
         "Nicaragua",
         "Niger",
         "Nigeria",
+        "North Korea",
         "North Macedonia",
         "Norway",
         "Oman",
@@ -3364,7 +3355,7 @@
     },
     "Solayer Emerald": {
       "url": "https://www.cryptocardhub.com/card/solayer-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 212,
       "list": [
         "Afghanistan",
@@ -3583,7 +3574,7 @@
     },
     "Tangem": {
       "url": "https://www.cryptocardhub.com/card/tangem-pay-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 63,
       "list": [
         "Andorra",
@@ -3653,8 +3644,8 @@
     },
     "Tria": {
       "url": "https://www.cryptocardhub.com/card/tria-card",
-      "at": "2026-08-03",
-      "count": 186,
+      "at": "2026-08-10",
+      "count": 188,
       "list": [
         "Afghanistan",
         "Albania",
@@ -3727,12 +3718,14 @@
         "Guyana",
         "Haiti",
         "Honduras",
+        "Hong Kong",
         "Hungary",
         "Iceland",
         "India",
         "Indonesia",
         "Iraq",
         "Israel",
+        "Italy",
         "Jamaica",
         "Japan",
         "Jordan",
@@ -3846,7 +3839,7 @@
     },
     "Trustee Plus": {
       "url": "https://www.cryptocardhub.com/card/trustee-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 37,
       "list": [
         "Australia",
@@ -3890,12 +3883,11 @@
     },
     "Tuyo": {
       "url": "https://www.cryptocardhub.com/card/tuyo-card",
-      "at": "2026-08-03",
-      "count": 59,
+      "at": "2026-08-10",
+      "count": 56,
       "list": [
         "Afghanistan",
         "Albania",
-        "Anguilla",
         "Antigua and Barbuda",
         "Argentina",
         "Australia",
@@ -3917,7 +3909,6 @@
         "Colombia",
         "Congo",
         "Costa Rica",
-        "Croatia",
         "Cyprus",
         "Czech Republic",
         "Denmark",
@@ -3943,7 +3934,6 @@
         "Poland",
         "Portugal",
         "Romania",
-        "Singapore",
         "Slovakia",
         "Slovenia",
         "South Korea",
@@ -3956,7 +3946,7 @@
     },
     "UglyCash": {
       "url": "https://www.cryptocardhub.com/card/uglycash-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 25,
       "list": [
         "Argentina",
@@ -3988,7 +3978,7 @@
     },
     "UR": {
       "url": "https://www.cryptocardhub.com/card/ur-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 98,
       "list": [
         "Algeria",
@@ -4093,13 +4083,13 @@
     },
     "Wirex": {
       "url": "https://www.wirexapp.com/help/article/supported-countries-1189",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 0,
       "list": []
     },
     "Xapo Bank": {
       "url": "https://www.cryptocardhub.com/card/xapo-bank-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 58,
       "list": [
         "Argentina",
@@ -4164,8 +4154,8 @@
     },
     "XPlace": {
       "url": "https://www.cryptocardhub.com/card/xplace-card",
-      "at": "2026-08-03",
-      "count": 196,
+      "at": "2026-08-10",
+      "count": 194,
       "list": [
         "Afghanistan",
         "Albania",
@@ -4175,7 +4165,6 @@
         "Antigua and Barbuda",
         "Argentina",
         "Armenia",
-        "Aruba",
         "Australia",
         "Austria",
         "Azerbaijan",
@@ -4200,7 +4189,6 @@
         "Cameroon",
         "Canada",
         "Cape Verde",
-        "Cayman Islands",
         "Central African Republic",
         "Chad",
         "Chile",
@@ -4295,6 +4283,7 @@
         "Nicaragua",
         "Niger",
         "Nigeria",
+        "North Korea",
         "North Macedonia",
         "Norway",
         "Oman",
@@ -4337,7 +4326,6 @@
         "Suriname",
         "Sweden",
         "Switzerland",
-        "Taiwan",
         "Tajikistan",
         "Tanzania",
         "Thailand",
@@ -4367,7 +4355,7 @@
     },
     "xPortal": {
       "url": "https://www.cryptocardhub.com/card/xportal-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 35,
       "list": [
         "Australia",
@@ -4409,7 +4397,7 @@
     },
     "ZEN.com": {
       "url": "https://www.cryptocardhub.com/card/zen-card",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 90,
       "list": [
         "Afghanistan",
@@ -4506,7 +4494,7 @@
     },
     "Plutus": {
       "url": "https://www.plutus.it/help/currently-supported-countries",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 29,
       "list": [
         "Austria",
@@ -4542,7 +4530,7 @@
     },
     "Bitget Card": {
       "url": "https://www.bitget.com/support/articles/12560603840909",
-      "at": "2026-08-03",
+      "at": "2026-08-10",
       "count": 28,
       "list": [
         "Afghanistan",
