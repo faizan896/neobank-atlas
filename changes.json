@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-17T07:01:08.697Z",
-  "runs": 5,
+  "generated": "2026-08-24T07:04:03.239Z",
+  "runs": 6,
   "checked": 50,
   "unreachable": [
     {
@@ -19,6 +19,11 @@
       "why": "HTTP 403"
     },
     {
+      "product": "Nexo",
+      "url": "https://supportedcountries.com/nexo-card/",
+      "why": "HTTP 502"
+    },
+    {
       "product": "Solayer Emerald",
       "url": "https://www.cryptocardhub.com/card/solayer-card",
       "why": "HTTP 404"
@@ -30,6 +35,18 @@
     }
   ],
   "events": [
+    {
+      "d": "2026-08-24",
+      "p": "EtherFi Cash",
+      "t": "Country list changed — 1 appeared",
+      "s": "Automated check",
+      "u": "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
+      "added": [
+        "Pakistan"
+      ],
+      "removed": [],
+      "suspect": false
+    },
     {
       "d": "2026-08-17",
       "p": "1inch Card",
