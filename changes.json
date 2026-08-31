@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-24T07:04:03.239Z",
-  "runs": 6,
+  "generated": "2026-08-31T13:04:36.936Z",
+  "runs": 7,
   "checked": 50,
   "unreachable": [
     {
@@ -19,11 +19,6 @@
       "why": "HTTP 403"
     },
     {
-      "product": "Nexo",
-      "url": "https://supportedcountries.com/nexo-card/",
-      "why": "HTTP 502"
-    },
-    {
       "product": "Solayer Emerald",
       "url": "https://www.cryptocardhub.com/card/solayer-card",
       "why": "HTTP 404"
@@ -32,6 +27,11 @@
       "product": "Uphold",
       "url": "https://support.uphold.com/hc/en-us/articles/360026786712-Is-my-location-supported",
       "why": "HTTP 403"
+    },
+    {
+      "product": "Bitget Card",
+      "url": "https://www.bitget.com/support/articles/12560603840909",
+      "why": "HTTP 404"
     }
   ],
   "events": [
