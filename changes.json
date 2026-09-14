@@ -1,12 +1,17 @@
 {
-  "generated": "2026-09-07T11:56:26.282Z",
-  "runs": 8,
+  "generated": "2026-09-14T12:11:38.418Z",
+  "runs": 9,
   "checked": 50,
   "unreachable": [
     {
       "product": "Coinbase Card",
       "url": "https://www.coinbase.com/card",
       "why": "HTTP 403"
+    },
+    {
+      "product": "EtherFi Cash",
+      "url": "https://help.ether.fi/en/articles/262373-where-is-ether-fi-currently-unavailable",
+      "why": "HTTP 404"
     },
     {
       "product": "Gnosis Pay",
