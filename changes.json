@@ -1,6 +1,6 @@
 {
-  "generated": "2026-09-21T12:20:22.669Z",
-  "runs": 10,
+  "generated": "2026-09-28T13:16:41.253Z",
+  "runs": 11,
   "checked": 50,
   "unreachable": [
     {
@@ -16,7 +16,7 @@
     {
       "product": "Gnosis Pay",
       "url": "https://help.gnosispay.com/hc/en-us/articles/39401751918612-Eligible-Countries-for-Gnosis-Pay",
-      "why": "HTTP 403"
+      "why": "HTTP 404"
     },
     {
       "product": "KAST",
@@ -40,6 +40,18 @@
     }
   ],
   "events": [
+    {
+      "d": "2026-09-28",
+      "p": "Kolo",
+      "t": "Country list changed — 1 disappeared",
+      "s": "Automated check",
+      "u": "https://www.cryptocardhub.com/card/kolo-card",
+      "added": [],
+      "removed": [
+        "Puerto Rico"
+      ],
+      "suspect": false
+    },
     {
       "d": "2026-08-24",
       "p": "EtherFi Cash",
