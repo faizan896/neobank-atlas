@@ -1,6 +1,6 @@
 {
-  "generated": "2026-09-28T13:16:41.253Z",
-  "runs": 11,
+  "generated": "2026-10-05T13:59:41.193Z",
+  "runs": 12,
   "checked": 50,
   "unreachable": [
     {
@@ -22,6 +22,11 @@
       "product": "KAST",
       "url": "https://concierge.kast.xyz/hc/en-us/articles/13939999566095-Is-the-KAST-Card-Available-in-My-Country",
       "why": "HTTP 403"
+    },
+    {
+      "product": "Nexo",
+      "url": "https://supportedcountries.com/nexo-card/",
+      "why": "fetch failed"
     },
     {
       "product": "Solayer Emerald",
