@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-19T12:33:02.657Z",
-  "runs": 14,
+  "generated": "2026-10-26T12:30:23.656Z",
+  "runs": 15,
   "checked": 50,
   "unreachable": [
     {
@@ -40,6 +40,18 @@
     }
   ],
   "events": [
+    {
+      "d": "2026-10-26",
+      "p": "Bitget Wallet",
+      "t": "Country list changed — 1 disappeared",
+      "s": "Automated check",
+      "u": "https://web3.bitget.com/card",
+      "added": [],
+      "removed": [
+        "Singapore"
+      ],
+      "suspect": false
+    },
     {
       "d": "2026-10-19",
       "p": "Ready",
