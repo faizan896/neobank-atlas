@@ -403,6 +403,7 @@
 
 <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+<script src="countries.js"></script>
 <script src="verified.js"></script>
 <script>
 /* ============================================================
@@ -415,11 +416,11 @@
 const EU=["Austria","Belgium","Bulgaria","Croatia","Cyprus","Czech Republic","Denmark","Estonia","Finland",
  "France","Germany","Greece","Hungary","Ireland","Italy","Latvia","Lithuania","Luxembourg","Malta",
  "Netherlands","Poland","Portugal","Romania","Slovakia","Slovenia","Spain","Sweden"];
-const ALIAS={"United States":"United States of America","UAE":"United Arab Emirates","Türkiye":"Turkey",
- "Czech Republic":"Czechia","DR Congo":"Dem. Rep. Congo","Dominican Republic":"Dominican Rep.",
- "South Sudan":"S. Sudan","Central African Republic":"Central African Rep.","Bosnia and Herzegovina":"Bosnia and Herz.",
- "Democratic Republic of the Congo":"Dem. Rep. Congo"};
-const norm=n=>ALIAS[n]||n;
+/* Names used to be folded towards the map's abbreviations, which is how
+   "Equatorial Guinea" and "Eq. Guinea" ended up as two rows with the
+   count split between them. Everything now resolves through ISO 3166-1
+   numeric to one full English name — see countries.js. */
+const norm=n=>canonCountry(n);
 const STALE=180;
 
 /* real, cited events — no invented history */
@@ -535,6 +536,7 @@ function noGate(p){
   return p.kyc==="No" && p._a.selfcust && !p.card_network;
 }
 function statusIn(p,c){
+  if(c&&isUninhabited(c)) return null;   /* no residents, so no availability */
   const v=VERIFIED[p.name];
   if(c && !v && noGate(p)) return "nogate";
   if(!c) return (v&&!v.nolist)?"verified":(p._cov.set.size?"listed":(p._cov.global?"claim":"unknown"));
@@ -605,11 +607,16 @@ function initGlobe(){
     .backgroundColor("#b3c4d8").showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
     .showGraticules(true).polygonAltitude(.01)
     .polygonSideColor(()=>"rgba(110,132,160,.28)").polygonStrokeColor(()=>"#6b7f96")
-    .polygonLabel(d=>{const n=d.properties.name,c=worksIn(n);
+    .polygonLabel(d=>{const n=canonFeature(d);
+      if(isUninhabited(n)) return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;'+
+        'border:1px solid #1a1a1a;padding:6px 9px;font-size:11px;letter-spacing:.05em;'+
+        'text-transform:uppercase">'+esc(n)+' — nobody lives here</div>';
       return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
-        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+' — '+c+' confirmed</div>';})
-    .onPolygonHover(d=>{hoverName=d?d.properties.name:null;
-      document.getElementById("globe").style.cursor=d?"pointer":"grab";})
+        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+' — '+
+        worksIn(n)+' confirmed</div>';})
+    .onPolygonHover(d=>{const n=d?canonFeature(d):null;
+      hoverName=(n&&!isUninhabited(n))?n:null;
+      document.getElementById("globe").style.cursor=hoverName?"pointer":"grab";})
     /* At 110m resolution these have no polygon, yet several are the biggest
        hubs in this category. Without markers they are unreachable by clicking. */
     .pointsData(CITY_STATES).pointLat("lat").pointLng("lng")
@@ -635,12 +642,12 @@ function initGlobe(){
     globe.polygonsData(feats); if(ALL.length) fillCountries(); paint();
   }).catch(()=>{});
 }
-const worksIn=c=>ALL.filter(p=>statusIn(p,c)==="verified").length;
+const worksIn=c=>isUninhabited(c)?0:ALL.filter(p=>statusIn(p,c)==="verified").length;
 function paint(){
   if(!globe||!feats.length) return;
-  const max=Math.max(1,...feats.map(f=>worksIn(f.properties.name)));
+  const max=Math.max(1,...feats.map(f=>worksIn(canonFeature(f))));
   globe.polygonCapColor(f=>{
-    const n=f.properties.name,c=worksIn(n);
+    const n=canonFeature(f),c=worksIn(n);
     if(country&&n===country) return "#2c3644";
     if(!c) return "#c3cfdd";
     return mix("#dfe6ef","#2c3644",.18+.72*(c/max));
@@ -676,7 +683,7 @@ function setCountry(name,silent){
   country=(country===name)?null:(name||null);
   syncCountry(); paint(); render();
   if(globe){
-    const f=country&&feats.find(x=>x.properties.name===country);
+    const f=country&&feats.find(x=>canonFeature(x)===country);
     if(f){const c=centroid(f);globe.pointOfView({lat:c[1],lng:c[0],altitude:1.7},900);}
     else if(!country) globe.pointOfView({lat:22,lng:30,altitude:2.4},900);
   }
@@ -1019,6 +1026,22 @@ function syncTrack(){
    instead of quietly shipping as facts. */
 function integrity(){
   const errs=[], warns=[];
+
+  /* One country, one row. A split spelling shows up here as a hard
+     error rather than as two quiet entries with half the count each. */
+  auditCountries(feats).forEach(m=>errs.push(["Country list",m]));
+  const seen=Object.create(null);
+  allCountryNames().forEach(c=>{
+    if(seen[c]) errs.push(["Country list","“"+c+"” appears twice in the picker."]);
+    seen[c]=1;
+  });
+  feats.forEach(f=>{
+    const code=isoOfFeature(f);
+    if(code===undefined)
+      errs.push(["Country list","Map country “"+((f.properties&&f.properties.name)||"?")+
+        "” can't be matched to the dataset."]);
+  });
+
   const names=new Set(ALL.map(p=>p.name));
   const known=new Set((typeof allCountryNames==="function"?allCountryNames():[]).map(norm));
   const today=new Date().toISOString().slice(0,10);
@@ -1406,13 +1429,15 @@ function buildChips(){
 
 /* ---------------- countries ---------------- */
 function allCountryNames(){
-  const s=new Set(feats.map(f=>f.properties.name));
+  const s=new Set(feats.map(canonFeature).filter(Boolean));
   CITY_STATES.forEach(c=>s.add(norm(c.name)));
   EU.forEach(c=>s.add(norm(c)));
   ALL.forEach(p=>p._cov.set.forEach(c=>s.add(c)));
   Object.values(VERIFIED).forEach(v=>{v.set.forEach(c=>s.add(c));
     (v.waitSet||new Set()).forEach(c=>s.add(c));});
-  return [...s].sort((a,b)=>a.localeCompare(b));
+  /* nobody lives there, and two polygons nothing lists */
+  return [...s].filter(c=>c&&!isUninhabited(c)&&!(c in MAP_NO_ISO&&MAP_NO_ISO[c]===null))
+    .sort((a,b)=>a.localeCompare(b));
 }
 function fillCountries(){
   const list=allCountryNames();
