@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-27T11:07:16.027Z",
-  "runs": 16,
+  "generated": "2026-11-02T15:05:14.410Z",
+  "runs": 17,
   "checked": 50,
   "unreachable": [
     {
@@ -40,6 +40,23 @@
     }
   ],
   "events": [
+    {
+      "d": "2026-11-02",
+      "p": "RedotPay",
+      "t": "Country list changed — 6 disappeared",
+      "s": "Automated check",
+      "u": "https://helpcenter.redotpay.com/en/articles/10339263-unsupported-countries-regions",
+      "added": [],
+      "removed": [
+        "Albania",
+        "Croatia",
+        "Kosovo",
+        "Montenegro",
+        "North Macedonia",
+        "Slovenia"
+      ],
+      "suspect": false
+    },
     {
       "d": "2026-10-26",
       "p": "Bitget Wallet",
