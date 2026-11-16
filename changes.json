@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-09T15:35:45.035Z",
-  "runs": 18,
+  "generated": "2026-11-16T15:11:53.398Z",
+  "runs": 19,
   "checked": 50,
   "unreachable": [
     {
@@ -32,6 +32,11 @@
       "product": "Uphold",
       "url": "https://support.uphold.com/hc/en-us/articles/360026786712-Is-my-location-supported",
       "why": "HTTP 403"
+    },
+    {
+      "product": "Wirex",
+      "url": "https://www.wirexapp.com/help/article/supported-countries-1189",
+      "why": "HTTP 404"
     },
     {
       "product": "Bitget Card",
