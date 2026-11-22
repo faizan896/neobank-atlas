@@ -730,7 +730,8 @@ const FILTER_WORDS=[
 function parseQuery(raw){
   let s=" "+raw.toLowerCase().trim()+" ";
   const filters=new Set(); let foundCountry=null;
-  const names=allCountryNames();
+  /* longest first, or "Papua New Guinea" is read as Guinea and "Guinea-Bissau" as Guinea */
+  const names=allCountryNames().sort((a,b)=>b.length-a.length);
   for(const c of names){
     const re=new RegExp("\\b"+c.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b");
     if(re.test(s)){ foundCountry=c; s=s.replace(re," "); break; }
