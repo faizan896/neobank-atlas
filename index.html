@@ -853,8 +853,10 @@ function syncCountry(){
   }
   if(layer!=="m") document.getElementById("s-count").textContent=on?worksIn(country)+" CONFIRMED":"";
 }
-function centroid(f){let xs=[],ys=[];const w=a=>{if(typeof a[0]==="number"){xs.push(a[0]);ys.push(a[1]);}else a.forEach(w);};
-  w(f.geometry.coordinates);return [xs.reduce((s,v)=>s+v,0)/xs.length,ys.reduce((s,v)=>s+v,0)/ys.length];}
+/* longitudes are averaged round the circle: Fiji sits on both sides of the date line */
+function centroid(f){let cx=0,sx=0,y=0,n=0;const R=Math.PI/180;
+  const w=a=>{if(typeof a[0]==="number"){cx+=Math.cos(a[0]*R);sx+=Math.sin(a[0]*R);y+=a[1];n++;}else a.forEach(w);};
+  w(f.geometry.coordinates);return [Math.atan2(sx,cx)/R,y/n];}
 document.getElementById("reset").onclick=()=>setCountry(null);
 document.getElementById("clear-c").onclick=()=>setCountry(null);
 
