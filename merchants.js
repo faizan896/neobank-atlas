@@ -150,8 +150,11 @@ const MC = (()=>{
   let geo=null, geoFine=false, geoWait=null, sets=new Map(), lastCountry=null, gTimer=null;
   let merged=false, loading=true;
 
+  /* this browser's registrations are held here as well, so one still shows if storage refuses the write */
+  let mine = null;
   const rebuild = () => {
-    all = M_STABLE.concat(LS.get("cov_merchants",[]).map(p=>Object.assign({},p,{pending:true}))).concat(remote);
+    if(!mine) mine = LS.get("cov_merchants", []);
+    all = M_STABLE.concat(mine.map(p=>Object.assign({},p,{pending:true}))).concat(remote);
     sets.clear();
   };
 
@@ -367,13 +370,19 @@ const MC = (()=>{
     const rec = { id:"u"+Date.now(), n:name, cat:$("m-cat").value, src:"user", a:(addr?addr+", ":"")+city,
       ll:pinLL || M_CITIES[city], coins:[...formCoins], contact:$("m-contact").value.trim(),
       submitted:new Date().toISOString() };
-    const arr = LS.get("cov_merchants", []); arr.push(rec); LS.set("cov_merchants", arr);
+    mine.push(rec);
+    const kept = () => { LS.set("cov_merchants", mine); return LS.get("cov_merchants", []).some(p=>p.id===rec.id); };
+    let saved = kept();
+    if(!saved){ /* storage is full: the merchant cache can be fetched again, a registration can't */
+      try{ localStorage.removeItem("cov_btcmap"); }catch(e){}
+      saved = kept();
+    }
     ["m-name","m-addr","m-contact","m-q"].forEach(id=>$(id).value="");
     formCoins.clear(); coins.clear();
     [...$("m-fcoins").children, ...$("m-chips").children].forEach(b=>b.classList.remove("on"));
     closeReg(); rebuild();
     if(country) setCountry(null);
-    toast("Submitted — pending review");
+    toast(saved ? "Submitted — pending review" : "Listed for this visit only — this browser would not save it");
     focusPlace(all.find(p=>p.id===rec.id));
   }
 
