@@ -828,7 +828,9 @@ function setCountry(name,silent){
 function aim(ms){
   if(!globe) return;
   const f=country&&feats.find(x=>canonFeature(x)===country);
+  const dot=country&&!f&&CITY_STATES.find(c=>c.name===country);
   if(f){const c=centroid(f);globe.pointOfView({lat:c[1],lng:c[0],altitude:1.7},ms);}
+  else if(dot) globe.pointOfView({lat:dot.lat,lng:dot.lng,altitude:1.7},ms);
   else if(!country) globe.pointOfView({lat:22,lng:30,altitude:2.4},ms);
 }
 function syncCountry(){
