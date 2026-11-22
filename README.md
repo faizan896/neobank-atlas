@@ -26,6 +26,7 @@ So "which card works in Pakistan, can I off-ramp to my bank, and what is the rea
 - **Provider detail with brand theming.** Selecting a provider re-themes the whole interface — globe included — in that company's colour.
 - **Gaps shown, not hidden.** Where a provider publishes nothing, the field reads `NOT PUBLISHED — UNVERIFIED` instead of being quietly omitted. Missing data is a visible, dashed badge in the list.
 - **Community reports.** Anyone can add what actually happened: signup accepted, KYC rejected, off-ramp worked, fees differed. Reports attach to a provider *and* a country — the missing dimension.
+- **Merchants layer.** A switch above the country picker swaps the globe from neobanks to businesses that take Bitcoin or stablecoins (about 30,000, live from [BTC Map](https://btcmap.org), plus a small curated stablecoin list). Pick a country to list its merchants, search by name or category, filter by network, or open the street map to zoom down to a single shop. Businesses can register themselves; like reports, those stay in `localStorage`. Link straight to it with `?v=merchants`.
 - **Filters** by wave (hybrid / web3-native) and by required capability (on-ramp, off-ramp, IBAN, crypto cards, …).
 
 ## Data
@@ -56,7 +57,7 @@ Prototype. Reports are stored in `localStorage`, so they are visible only to the
 
 ## Tech
 
-Vanilla HTML/CSS/JS · [globe.gl](https://globe.gl) (Three.js) · [world-atlas](https://github.com/topojson/world-atlas) · [neobankbeat data](https://www.neobankbeat.com/data.json)
+Vanilla HTML/CSS/JS · [globe.gl](https://globe.gl) (Three.js) · [world-atlas](https://github.com/topojson/world-atlas) · [neobankbeat data](https://www.neobankbeat.com/data.json) · [BTC Map](https://btcmap.org) · [Leaflet](https://leafletjs.com) + OpenStreetMap tiles (street map only)
 
 ## Licence
 

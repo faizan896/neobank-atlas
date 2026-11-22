@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coverage — which fintech products actually work in your country</title>
-<meta name="description" content="Find out which neobanks, cards and wallets work where you live, which ones will turn you down, and what they cost. Checked by hand, with sources and dates.">
+<meta name="description" content="Find out which neobanks, cards and wallets work where you live, which ones will turn you down, and what they cost. Checked by hand, with sources and dates. Plus the merchants that take Bitcoin and stablecoins, on the same globe.">
 <meta property="og:title" content="Coverage">
 <meta property="og:description" content="Which fintech products actually work in your country.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><path fill='%2316202b' d='M26 0H120V94H94V120H0V26H26Z'/><path fill='%23f7f7f5' d='M92.77 82.94A40 40 0 1 1 92.77 37.06L81.3 45.08A26 26 0 1 0 81.3 74.92Z'/><circle cx='60' cy='60' r='11' fill='%23f7f7f5'/></svg>">
@@ -35,6 +35,26 @@
   /* ---------- map ---------- */
   #view{position:relative;flex:1 1 52%;min-width:0;background:var(--sea);overflow:hidden}
   #globe{position:absolute;inset:0;touch-action:none}
+  #globe.off{display:none}
+  /* merchants layer: street map under the same stamps */
+  #map{position:absolute;inset:0;z-index:3;background:var(--sea);visibility:hidden}
+  #map.on{visibility:visible}
+  #map .leaflet-tile{filter:grayscale(1) brightness(.97) contrast(.4) sepia(1) hue-rotate(186deg) saturate(.55)}
+  #vtabs{position:absolute;top:14px;right:16px;z-index:60;display:flex;border:1px solid var(--rule);background:var(--paper)}
+  #vtabs[hidden],#vtabs button[hidden]{display:none}
+  #vtabs button{padding:8px 14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  #vtabs button+button{border-left:1px solid var(--rule)}
+  #vtabs button.on{background:var(--ink);color:var(--paper)}
+  body.lm #reset{top:56px}
+  body.mm #s-br{right:58px}
+  body.mm .stamp{background:rgba(247,247,245,.86);padding:5px 8px}
+  .leaflet-control-zoom{border:1px solid var(--rule)!important;border-radius:0!important;box-shadow:none!important}
+  .leaflet-control-zoom a{background:var(--paper)!important;color:var(--ink)!important;border-radius:0!important}
+  .leaflet-control-attribution{background:rgba(247,247,245,.82)!important;font-family:var(--mono);font-size:9px!important}
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--paper);border:1px solid var(--rule);border-radius:0;box-shadow:none}
+  .leaflet-popup-content{margin:13px 15px;font-family:var(--sans);font-size:12px;line-height:1.5}
+  .pop-t{font-size:14px;margin-bottom:3px}
+  .pop-m{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
   .stamp{position:absolute;z-index:50;pointer-events:none;font-family:var(--mono);font-size:11px;
     letter-spacing:.06em;color:#16202b;line-height:1.7}
   #s-tl{top:18px;left:20px}
@@ -71,6 +91,23 @@
     background:var(--paper)}
   .lg-lg{width:44px;height:44px}
   .lg-lg i{font-size:17px}
+
+  /* layer switch — neobanks or merchants, one globe */
+  .layers{margin-top:var(--s3);display:flex;border:1px solid var(--rule);background:var(--card)}
+  .layers button{flex:1;padding:10px 12px;text-align:center;font-family:var(--mono);font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .layers button+button{border-left:1px solid var(--rule)}
+  .layers button:hover{color:var(--ink)}
+  .layers button.on{background:var(--brand);color:#fff}
+  #nb,#mc{flex:1;min-height:0;display:flex;flex-direction:column}
+  #nb[hidden],#mc[hidden],#nb-top[hidden],.chip[hidden]{display:none}
+  #mc .srch .hint{margin-top:12px}
+  .mtags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex:0 1 auto}
+  .row.sel{background:#e9e9e2}
+  .mfoot{border-top:1px solid var(--rule);padding:12px var(--s5);display:flex;justify-content:space-between;
+    align-items:center;gap:14px}
+  .two{display:flex;gap:16px}
+  .two>div{flex:1;min-width:0}
 
   /* country bar — the primary control */
   .cbar{margin-top:var(--s3);border:1px solid var(--rule);background:var(--card);display:flex;align-items:stretch}
@@ -242,6 +279,7 @@
   }
   @media(max-width:600px){
     #view{flex:0 0 22vh;min-height:150px}
+    #mc .srch .hint,#m-cities,.mfoot{display:none}
     .brand{font-size:17px}
     .answer b{font-size:18px}
     .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -265,7 +303,12 @@
 
   <section id="view">
     <div id="globe"></div>
-    <div class="stamp" id="s-tl">COVERAGE<br><span id="s-scope">PICK A COUNTRY</span></div>
+    <div id="map"></div>
+    <div id="vtabs" hidden>
+      <button id="v-globe" class="on">Globe</button>
+      <button id="v-map">Street map</button>
+    </div>
+    <div class="stamp" id="s-tl"><span id="s-layer">COVERAGE</span><br><span id="s-scope">PICK A COUNTRY</span></div>
     <div class="stamp" id="s-bl">Darker countries have more products that are confirmed to work there.</div>
     <div class="stamp" id="s-br"><span id="s-count"></span></div>
     <button id="reset">Show the whole world</button>
@@ -276,6 +319,12 @@
       <div class="brandrow">
         <div class="brand"><svg class="mk" aria-hidden="true"><use href="#mk"/></svg><span class="wm">Cover<b>age</b></span><span id="ver">48 of 114 checked</span></div>
         <button class="chip" id="report-any">Report bad data</button>
+        <button class="chip" id="m-reg-top" hidden>+ Register your business</button>
+      </div>
+
+      <div class="layers">
+        <button id="l-nb" class="on" aria-pressed="true">Neobanks &amp; cards</button>
+        <button id="l-m" aria-pressed="false">Merchants</button>
       </div>
 
       <div class="cbar">
@@ -284,6 +333,7 @@
         <button class="chg" id="clear-c" hidden>Clear</button>
       </div>
 
+      <div id="nb-top">
       <div class="answer" id="answer">
         <div class="y"><b id="a-y">—</b><span>confirmed here</span></div>
         <div class="n"><b id="a-n">—</b><span>officially ruled out</span></div>
@@ -297,7 +347,10 @@
         <button id="t-track">Tracking<span class="n" id="trk-n"></span></button>
         <button id="t-data">Data health<span class="n" id="dh-n"></span></button>
       </nav>
+      </div>
     </div>
+
+    <div id="nb">
 
     <!-- ============ BROWSE ============ -->
     <div class="pane" id="p-browse">
@@ -344,6 +397,59 @@
         <button id="tray-clear" style="margin-right:16px">Clear</button>
         <button class="go" id="tray-go">Compare</button>
       </div>
+    </div>
+    </div>
+
+    <!-- ============ MERCHANTS ============ -->
+    <div id="mc" hidden>
+      <div class="srch">
+        <label class="sr" for="m-q">Search merchants</label>
+        <input id="m-q" placeholder="Try: coffee, hotel, Lisbon" autocomplete="off">
+        <div class="chips" id="m-chips"></div>
+        <div class="hint">Jump to a city on the street map</div>
+        <div class="chips" id="m-cities"></div>
+      </div>
+      <div class="bar">
+        <span class="lbl dim" id="m-count">Loading…</span>
+        <span class="lbl dim" id="m-src">Source: BTC Map</span>
+      </div>
+      <div class="pane" id="m-rows"></div>
+      <div class="mfoot">
+        <span class="lbl dim">Take crypto at your business? Listing is free.</span>
+        <button class="solid" id="m-open">Register</button>
+      </div>
+    </div>
+
+    <!-- register a business -->
+    <div id="m-reg" class="sheet">
+      <div class="dh">
+        <button class="back" id="m-back">← Back to merchants</button>
+        <h2>Register your business</h2>
+        <div class="sub">Listing is free. It shows as pending until it is reviewed.</div>
+      </div>
+      <div class="pane"><div class="mb">
+        <label for="m-name">Business name *</label>
+        <input id="m-name" placeholder="Oak &amp; Iron Coffee">
+        <div class="two">
+          <div><label for="m-cat">Category *</label><select id="m-cat"></select></div>
+          <div><label for="m-city">City *</label><select id="m-city"></select></div>
+        </div>
+        <label for="m-addr">Address</label>
+        <input id="m-addr" placeholder="Zamzama Blvd, Phase 5, DHA">
+        <label>Accepted networks *</label>
+        <div class="chips" id="m-fcoins"></div>
+        <label for="m-contact">Contact</label>
+        <input id="m-contact" placeholder="+92 300 1234567">
+        <label>Pin location</label>
+        <p class="note" id="m-pinhint">Open the <b>street map</b> and click it to drop an exact pin. Otherwise the city centre is used.</p>
+        <button class="ghost" id="m-pin" style="margin-top:10px">Open the street map</button>
+        <div class="err" id="m-err"></div>
+        <p class="note" style="margin-top:14px">Saved in this browser for now, so only you can see it. Publishing listings needs a backend.</p>
+        <div class="acts">
+          <button class="ghost" id="m-cancel">Cancel</button>
+          <button class="solid" id="m-submit">Submit for review</button>
+        </div>
+      </div></div>
     </div>
 
     <!-- detail -->
@@ -405,6 +511,7 @@
 <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
 <script src="countries.js"></script>
 <script src="verified.js"></script>
+<script src="merchants.js"></script>
 <script>
 /* ============================================================
    Coverage — data layer notes
@@ -441,6 +548,8 @@ const CHANGES=[
 
 /* ---------------- state ---------------- */
 let ALL=[],VIEW=[],country=null,selected=null,globe=null,feats=[],hoverName=null;
+let layer="nb"; /* "nb" neobanks, "m" merchants — both drawn on the one globe */
+let introPending=false, cityPts=null;
 let tab="browse",sortMode="best",cmp=new Set(),qParsed={text:"",filters:new Set()};
 let activeChips=new Set(),needs=new Set(),loadState="loading";
 
@@ -603,8 +712,10 @@ const CITY_STATES=[
 ];
 function initGlobe(){
   if(typeof Globe!=="function") return;
-  globe=Globe({rendererConfig:{antialias:true}})(document.getElementById("globe"))
-    .backgroundColor("#b3c4d8").showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
+  /* no WebGL (old device, GPU blocked): the lists still work, and merchants fall back to the street map */
+  try{ globe=Globe({rendererConfig:{antialias:true}})(document.getElementById("globe")); }
+  catch(e){ globe=null; return; }
+  globe.backgroundColor("#b3c4d8").showAtmosphere(true).atmosphereColor("#e3eaf3").atmosphereAltitude(.15)
     .showGraticules(true).polygonAltitude(.01)
     .polygonSideColor(()=>"rgba(110,132,160,.28)").polygonStrokeColor(()=>"#6b7f96")
     .polygonLabel(d=>{const n=canonFeature(d);
@@ -612,8 +723,8 @@ function initGlobe(){
         'border:1px solid #1a1a1a;padding:6px 9px;font-size:11px;letter-spacing:.05em;'+
         'text-transform:uppercase">'+esc(n)+' — nobody lives here</div>';
       return '<div style="font-family:ui-monospace,Menlo,monospace;background:#f7f7f5;border:1px solid #1a1a1a;'+
-        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+' — '+
-        worksIn(n)+' confirmed</div>';})
+        'padding:6px 9px;font-size:11px;letter-spacing:.05em;text-transform:uppercase">'+esc(n)+
+        (layer==="m"?' — show merchants':' — '+worksIn(n)+' confirmed')+'</div>';})
     .onPolygonHover(d=>{const n=d?canonFeature(d):null;
       hoverName=(n&&!isUninhabited(n))?n:null;
       document.getElementById("globe").style.cursor=hoverName?"pointer":"grab";})
@@ -639,12 +750,20 @@ function initGlobe(){
   fit(); addEventListener("resize",fit);
   fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(t=>{
     feats=topojson.feature(t,t.objects.countries).features;
-    globe.polygonsData(feats); if(ALL.length) fillCountries(); paint();
+    globe.polygonsData(feats); fillCountries(); paint(); if(layer==="m") render();
   }).catch(()=>{});
 }
 const worksIn=c=>isUninhabited(c)?0:ALL.filter(p=>statusIn(p,c)==="verified").length;
 function paint(){
-  if(!globe||!feats.length) return;
+  if(!globe) return;
+  if(layer==="m"){
+    globe.polygonCapColor(f=>country&&canonFeature(f)===country?"#8fa3bd":"#c3cfdd");
+    MC.paintGlobe(); return;
+  }
+  /* merchant dots are one merged mesh; it has to be emptied before the
+     city-state markers can come back as separate, clickable points */
+  if(MC.clearGlobe(paint)) return;
+  if(!feats.length) return;
   const max=Math.max(1,...feats.map(f=>worksIn(canonFeature(f))));
   globe.polygonCapColor(f=>{
     const n=canonFeature(f),c=worksIn(n);
@@ -654,7 +773,7 @@ function paint(){
   });
   globe.pointColor(d=>country&&d.name===country?"#2c3644"
     :worksIn(d.name)?mix("#dfe6ef","#2c3644",.18+.72*(worksIn(d.name)/max)):"#c3cfdd")
-   .pointsData(CITY_STATES);
+   .pointsData(cityPts||CITY_STATES);
 }
 function mix(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
   const A=p(a),B=p(b);return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";}
@@ -665,6 +784,7 @@ function writeURL(push){
   if(country) q.set("c",country);
   if(selected) q.set("p",selected.name);
   if(tab!=="browse") q.set("t",tab);
+  if(layer==="m") q.set("v","merchants");
   const u=location.pathname+(q.toString()?"?"+q:"");
   if(u===location.pathname+location.search) return;
   push?history.pushState({},"",u):history.replaceState({},"",u);
@@ -672,11 +792,30 @@ function writeURL(push){
 addEventListener("popstate",()=>{
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
-  syncCountry(); setTab(tab,true);
-  const p=q.get("p"), prov=p&&ALL.find(x=>x.name===p);
+  setLayer(q.get("v")==="merchants"?"m":"nb",true); setTab(tab,true);
+  const p=q.get("p"), prov=layer==="nb"&&p&&ALL.find(x=>x.name===p);
   if(prov) openDetail(prov,true); else closeSheets(true);
   paint(); render();
 });
+
+/* ---------------- layers ---------------- */
+function setLayer(name,silent){
+  layer=name==="m"?"m":"nb";
+  const m=layer==="m", id=x=>document.getElementById(x);
+  document.body.classList.toggle("lm",m);
+  [["l-nb",!m],["l-m",m]].forEach(([b,on])=>{id(b).classList.toggle("on",on);id(b).setAttribute("aria-pressed",on);});
+  id("nb-top").hidden=m; id("nb").hidden=m; id("mc").hidden=!m; id("vtabs").hidden=!m;
+  id("report-any").hidden=m; id("m-reg-top").hidden=!m;
+  id("s-layer").textContent=m?"MERCHANTS":"COVERAGE";
+  id("s-bl").textContent=m?"Each dot is a business that takes Bitcoin or stablecoins. Pick a country to list the ones there."
+    :"Darker countries have more products that are confirmed to work there.";
+  if(m){ closeSheets(true); MC.show(); } else MC.hide();
+  fillCountries(); syncCountry(); paint(); render();
+  if(!m&&introPending){ introPending=false; if(!country&&tab==="browse"&&ALL.length) showIntro(); }
+  if(!silent) writeURL(true);
+}
+document.getElementById("l-nb").onclick=()=>setLayer("nb");
+document.getElementById("l-m").onclick=()=>setLayer("m");
 
 /* ---------------- country ---------------- */
 function setCountry(name,silent){
@@ -692,7 +831,7 @@ function setCountry(name,silent){
 function syncCountry(){
   const on=!!country;
   if(typeof buildExamples==="function"&&ALL.length) buildExamples();
-  document.getElementById("s-scope").textContent=on?country.toUpperCase():"PICK A COUNTRY";
+  document.getElementById("s-scope").textContent=on?country.toUpperCase():layer==="m"?"WORLDWIDE":"PICK A COUNTRY";
   document.getElementById("reset").classList.toggle("on",on);
   document.getElementById("clear-c").hidden=!on;
   document.getElementById("answer").classList.toggle("on",on);
@@ -707,7 +846,7 @@ function syncCountry(){
     document.getElementById("a-n").textContent=s.no;
     document.getElementById("a-u").textContent=s.unk;
   }
-  document.getElementById("s-count").textContent=on?worksIn(country)+" CONFIRMED":"";
+  if(layer!=="m") document.getElementById("s-count").textContent=on?worksIn(country)+" CONFIRMED":"";
 }
 function centroid(f){let xs=[],ys=[];const w=a=>{if(typeof a[0]==="number"){xs.push(a[0]);ys.push(a[1]);}else a.forEach(w);};
   w(f.geometry.coordinates);return [xs.reduce((s,v)=>s+v,0)/xs.length,ys.reduce((s,v)=>s+v,0)/ys.length];}
@@ -762,6 +901,7 @@ function matchesQuery(p){
 
 /* ---------------- render ---------------- */
 function render(){
+  if(layer==="m") return MC.render();
   if(tab==="browse") renderBrowse();
   else if(tab==="match") renderMatch();
   else if(tab==="changes") renderChanges();
@@ -1387,6 +1527,7 @@ document.getElementById("submit").onclick=()=>{
 addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
   if(document.getElementById("ov").classList.contains("show")) return closeReport();
+  if(layer==="m"&&MC.esc()) return;
   if(document.getElementById("compare").classList.contains("on")||
      document.getElementById("detail").classList.contains("on")) return closeSheets();
   if(country) setCountry(null);
@@ -1444,9 +1585,9 @@ function fillCountries(){
   [["pick","Choose where you live…"],["f-ctry",null]].forEach(([id,ph])=>{
     const el=document.getElementById(id); if(!el) return;
     const keep=el.value; el.innerHTML="";
-    if(ph) el.add(new Option(ph,""));
-    list.forEach(c=>{const n=worksIn(c); el.add(new Option(c+(id==="pick"&&n?"  ·  "+n+" work here":""),c));});
-    if(keep) el.value=keep;
+    if(ph) el.add(new Option(layer==="m"?"All countries":ph,""));
+    list.forEach(c=>{const n=worksIn(c); el.add(new Option(c+(id==="pick"&&n&&layer==="nb"?"  ·  "+n+" work here":""),c));});
+    if(id==="pick") el.value=country||""; else if(keep) el.value=keep;
   });
   const sp=document.getElementById("f-prov"); sp.innerHTML="";
   ALL.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>sp.add(new Option(p.name,p.name)));
@@ -1462,9 +1603,9 @@ function ingest(data){
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
   syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint();
-  loadFeed().then(()=>{ if(tab==="changes") renderChanges(); syncFeedBadge(); });
-  const p=q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
-  if(!country&&!p) showIntro();
+  loadFeed().then(()=>{ if(tab==="changes"&&layer==="nb") renderChanges(); syncFeedBadge(); });
+  const p=layer==="nb"&&q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
+  if(layer==="m") introPending=!country; else if(!country&&!p) showIntro();
 }
 function showIntro(){
   document.getElementById("rows").innerHTML=
@@ -1484,6 +1625,9 @@ function showIntro(){
 }
 
 initGlobe(); buildChips();
+/* the merchants layer has its own data, so it opens without waiting for the neobank list */
+{const q=new URLSearchParams(location.search);
+ if(q.get("v")==="merchants"){country=q.get("c")||null; setLayer("m",true);}}
 document.getElementById("pick").onchange=e=>setCountry(e.target.value||null);
 document.getElementById("sort").onchange=e=>{sortMode=e.target.value;render();};
 document.getElementById("q").addEventListener("input",e=>{
