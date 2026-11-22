@@ -294,17 +294,21 @@ const MC = (()=>{
     if(country!==lastCountry){ lastCountry = country; wantFit = !!country; }
     if(fly) wantFit = true;
     const set = country ? countrySet() : true;
-    let res = (set===true || set instanceof Set)
-      ? all.filter(p=>mMatches(p, q, coins) && (set===true || set.has(p.id))) : [];
-    shown = res; paintGlobe();
-
     const street = mode==="map" && !!map;
+    /* a country the map has no outline for can't be filtered: the street map then lists whatever is in view */
+    const open = set===true || (set===null && street);
+    let res = (open || set instanceof Set)
+      ? all.filter(p=>mMatches(p, q, coins) && (open || set.has(p.id))) : [];
+    shown = set===null ? [] : res; paintGlobe();
+
     const ready = !loading && set!=="wait";
     if(!street){ if(ready) wantFit = false; }
     else{
       if(wantFit && ready){
         wantFit = false;
-        if(res.length && (q || coins.size || country)) fit(res);
+        const spot = set===null && CITY_STATES.find(c=>c.name===country);
+        if(spot) map.setView([spot.lat, spot.lng], 12, {animate:false});
+        else if(res.length && set!==null && (q || coins.size || country)) fit(res);
       }
       const b = map.getBounds();
       res = res.filter(p=>b.contains(p.ll));
