@@ -730,12 +730,11 @@ const FILTER_WORDS=[
 function parseQuery(raw){
   let s=" "+raw.toLowerCase().trim()+" ";
   const filters=new Set(); let foundCountry=null;
-  /* longest first, or "Papua New Guinea" is read as Guinea and "Guinea-Bissau" as Guinea */
-  const names=allCountryNames().sort((a,b)=>b.length-a.length);
-  for(const c of names){
-    const re=new RegExp("\\b"+c.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b");
-    if(re.test(s)){ foundCountry=c; s=s.replace(re," "); break; }
-  }
+  const reOf=c=>new RegExp("\\b"+c.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b");
+  const hits=allCountryNames().filter(c=>reOf(c).test(s));
+  /* "Papua New Guinea" also matches Guinea: skip a name that sits inside a longer match */
+  const hit=hits.find(c=>!hits.some(o=>o!==c&&o.toLowerCase().includes(c.toLowerCase())));
+  if(hit){ foundCountry=hit; s=s.replace(reOf(hit)," "); }
   FILTER_WORDS.forEach(([re,f])=>{ if(re.test(s)){ filters.add(f); s=s.replace(re," "); } });
   s=s.replace(/\b(in|for|the|a|an|available|works?|with|and|that|me|to|my|any|best)\b/g," ");
   /* whatever survives is a name fragment; drop stubs left behind by the phrase strips */
