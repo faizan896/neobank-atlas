@@ -791,12 +791,12 @@ function writeURL(push){
   push?history.pushState({},"",u):history.replaceState({},"",u);
 }
 addEventListener("popstate",()=>{
-  const q=new URLSearchParams(location.search);
+  const q=new URLSearchParams(location.search), was=country;
   country=q.get("c")||null; tab=q.get("t")||"browse";
   setLayer(q.get("v")==="merchants"?"m":"nb",true); setTab(tab,true);
   const p=q.get("p"), prov=layer==="nb"&&p&&ALL.find(x=>x.name===p);
   if(prov) openDetail(prov,true); else closeSheets(true);
-  paint(); render(); aim(900);
+  paint(); render(); if(country!==was) aim(900);
 });
 
 /* ---------------- layers ---------------- */
