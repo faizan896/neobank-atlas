@@ -387,6 +387,8 @@ const MC = (()=>{
     const rec = { id:"u"+Date.now(), n:name, cat:$("m-cat").value, src:"user", a:(addr?addr+", ":"")+city,
       ll:pinLL || M_CITIES[city], coins:[...formCoins], contact:$("m-contact").value.trim(),
       submitted:new Date().toISOString() };
+    /* another tab may have saved one since this page loaded */
+    LS.get("cov_merchants", []).forEach(p=>{ if(!mine.some(m=>m.id===p.id)) mine.push(p); });
     mine.push(rec);
     const kept = () => { LS.set("cov_merchants", mine); return LS.get("cov_merchants", []).some(p=>p.id===rec.id); };
     let saved = kept();
