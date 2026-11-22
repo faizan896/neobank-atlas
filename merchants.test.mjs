@@ -22,7 +22,12 @@ ok("a row keeps its place, name and address",
 ok("the icon becomes a category", row.cat === "Coffee", row.cat);
 ok("an unknown icon is spelled out", M.mNormalize({ ...raw, icon: "hair_salon" }).cat === "Hair Salon");
 ok("a missing icon reads Other", M.mNormalize({ ...raw, icon: undefined }).cat === "Other");
-ok("BTC Map rows accept BTC", same(row.coins, ["BTC"]) && row.src === "btcmap");
+ok("an untagged row takes BTC", same(row.coins, ["BTC"]) && row.src === "btcmap");
+const ln = { "osm:payment:lightning": "yes" }, chain = { "osm:payment:onchain": "yes" };
+ok("a Lightning-only row is LN, not BTC", same(M.mNormalize({ ...raw, ...ln }).coins, ["LN"]));
+ok("an on-chain row is BTC", same(M.mNormalize({ ...raw, ...chain }).coins, ["BTC"]));
+ok("a row tagged with both takes both", same(M.mNormalize({ ...raw, ...ln, ...chain }).coins, ["BTC", "LN"]));
+ok("\"no\" is not yes", same(M.mNormalize({ ...raw, "osm:payment:lightning": "no" }).coins, ["BTC"]));
 
 ok("a row with no name is dropped", !M.mValid({ ...raw, name: "" }));
 ok("a row with no position is dropped", !M.mValid({ ...raw, lat: null }) && !M.mValid({ ...raw, lon: "1" }));
@@ -34,6 +39,10 @@ ok("a cached row comes back the same", same(M.mNormalize(M.mUnpack(M.mPack(raw))
 const bare = { id: 9, lat: 1, lon: 2, name: "X" };
 ok("empty fields survive the cache", same(M.mNormalize(M.mUnpack(M.mPack(bare))), M.mNormalize(bare)));
 ok("cached rows are still valid", M.mValid(M.mUnpack(M.mPack(bare))));
+[{ ...raw, ...ln }, { ...raw, ...chain }, { ...raw, ...ln, ...chain }].forEach(r =>
+  ok("the cache keeps " + M.mNormalize(r).coins.join("+"), same(M.mNormalize(M.mUnpack(M.mPack(r))), M.mNormalize(r))));
+ok("a Lightning filter finds a Lightning row",
+  M.mMatches(M.mNormalize({ ...raw, ...ln }), "", new Set(["LN"])) && !M.mMatches(row, "", new Set(["LN"])));
 
 console.log("\nunverified flag");
 const now = Date.parse("2026-11-01T00:00:00Z");

@@ -6,7 +6,7 @@
    on top. Loaded only when the layer is first opened.
    ============================================================ */
 
-const M_API = "https://api.btcmap.org/v4/places?limit=60000&fields=id,lat,lon,name,address,icon,verified_at";
+const M_API = "https://api.btcmap.org/v4/places?limit=60000&fields=id,lat,lon,name,address,icon,verified_at,osm:payment:onchain,osm:payment:lightning";
 const M_ATLAS = "https://unpkg.com/world-atlas@2/countries-50m.json";
 const M_LEAFLET = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min";
 const M_COINS = ["BTC","LN","USDC","USDT","DAI","PYUSD"];
@@ -42,13 +42,19 @@ const M_STABLE = [
 /* ---------------- rows ---------------- */
 const mPretty = s => (s||"other").replace(/_/g," ").replace(/\b\w/g,m=>m.toUpperCase());
 const mValid = x => !!x && typeof x.lat==="number" && typeof x.lon==="number" && !!x.name;
+/* on-chain and Lightning are tagged separately; a row tagged with neither still takes Bitcoin somehow */
 function mNormalize(r){
+  const chain = r["osm:payment:onchain"]==="yes", ln = r["osm:payment:lightning"]==="yes";
   return { id:"b"+r.id, n:r.name || "Unnamed merchant", ll:[r.lat, r.lon], a:r.address || "",
-    cat:M_ICON_CAT[r.icon] || mPretty(r.icon), coins:["BTC"], v:r.verified_at || null, src:"btcmap" };
+    cat:M_ICON_CAT[r.icon] || mPretty(r.icon), coins:ln ? (chain ? ["BTC","LN"] : ["LN"]) : ["BTC"],
+    v:r.verified_at || null, src:"btcmap" };
 }
 /* the cache keeps tuples: the keyed rows are too big for localStorage */
-const mPack = r => [r.id, r.lat, r.lon, r.name, r.address||"", r.icon||"", r.verified_at||""];
-const mUnpack = t => ({id:t[0], lat:t[1], lon:t[2], name:t[3], address:t[4], icon:t[5]||undefined, verified_at:t[6]||null});
+const M_CACHE_V = 2;
+const mPack = r => [r.id, r.lat, r.lon, r.name, r.address||"", r.icon||"", r.verified_at||"",
+  (r["osm:payment:onchain"]==="yes"?1:0) + (r["osm:payment:lightning"]==="yes"?2:0)];
+const mUnpack = t => ({id:t[0], lat:t[1], lon:t[2], name:t[3], address:t[4], icon:t[5]||undefined, verified_at:t[6]||null,
+  "osm:payment:onchain":t[7]&1?"yes":undefined, "osm:payment:lightning":t[7]&2?"yes":undefined});
 
 /* BTC Map rows nobody has re-verified in a year are flagged, not hidden */
 function mStale(p, now){
@@ -160,7 +166,7 @@ const MC = (()=>{
 
   async function load(){
     const c = LS.get("cov_btcmap", null);
-    if(c && Array.isArray(c.d) && Date.now()-c.t < 864e5){
+    if(c && c.v===M_CACHE_V && Array.isArray(c.d) && Date.now()-c.t < 864e5){
       remote = c.d.map(mUnpack).filter(mValid).map(mNormalize);
       src = "Source: BTC Map · cached"; loading = false; rebuild(); render(); return;
     }
@@ -168,7 +174,7 @@ const MC = (()=>{
       const r = await fetch(M_API);
       if(!r.ok) throw new Error(r.status);
       const raw = (await r.json()).filter(mValid);
-      LS.set("cov_btcmap", {t:Date.now(), d:raw.map(mPack)});
+      LS.set("cov_btcmap", {t:Date.now(), v:M_CACHE_V, d:raw.map(mPack)});
       remote = raw.map(mNormalize); src = "Source: BTC Map · live";
     }catch(e){ src = "Source: offline seed"; }
     loading = false; rebuild(); render();
@@ -431,5 +437,5 @@ const MC = (()=>{
 })();
 
 if (typeof module !== "undefined" && module.exports)
-  module.exports = { M_STABLE, mNormalize, mPack, mUnpack, mValid, mStale, mMatches, mSample,
+  module.exports = { M_STABLE, M_CACHE_V, mNormalize, mPack, mUnpack, mValid, mStale, mMatches, mSample,
     mIndex, mInCountry };
