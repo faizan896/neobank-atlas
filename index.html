@@ -751,6 +751,7 @@ function initGlobe(){
   fetch("https://unpkg.com/world-atlas@2/countries-110m.json").then(r=>r.json()).then(t=>{
     feats=topojson.feature(t,t.objects.countries).features;
     globe.polygonsData(feats); fillCountries(); paint(); if(layer==="m") render();
+    if(country) aim(0); /* a link that names a country opens on it */
   }).catch(()=>{});
 }
 const worksIn=c=>isUninhabited(c)?0:ALL.filter(p=>statusIn(p,c)==="verified").length;
@@ -795,7 +796,7 @@ addEventListener("popstate",()=>{
   setLayer(q.get("v")==="merchants"?"m":"nb",true); setTab(tab,true);
   const p=q.get("p"), prov=layer==="nb"&&p&&ALL.find(x=>x.name===p);
   if(prov) openDetail(prov,true); else closeSheets(true);
-  paint(); render();
+  paint(); render(); aim(900);
 });
 
 /* ---------------- layers ---------------- */
@@ -820,13 +821,15 @@ document.getElementById("l-m").onclick=()=>setLayer("m");
 /* ---------------- country ---------------- */
 function setCountry(name,silent){
   country=(country===name)?null:(name||null);
-  syncCountry(); paint(); render();
-  if(globe){
-    const f=country&&feats.find(x=>canonFeature(x)===country);
-    if(f){const c=centroid(f);globe.pointOfView({lat:c[1],lng:c[0],altitude:1.7},900);}
-    else if(!country) globe.pointOfView({lat:22,lng:30,altitude:2.4},900);
-  }
+  syncCountry(); paint(); render(); aim(900);
   if(!silent) writeURL(true);
+}
+/* turn the globe to the picked country, or back out to the whole world */
+function aim(ms){
+  if(!globe) return;
+  const f=country&&feats.find(x=>canonFeature(x)===country);
+  if(f){const c=centroid(f);globe.pointOfView({lat:c[1],lng:c[0],altitude:1.7},ms);}
+  else if(!country) globe.pointOfView({lat:22,lng:30,altitude:2.4},ms);
 }
 function syncCountry(){
   const on=!!country;
@@ -1602,7 +1605,7 @@ function ingest(data){
   fillCountries(); buildChips(); buildExamples();
   const q=new URLSearchParams(location.search);
   country=q.get("c")||null; tab=q.get("t")||"browse";
-  syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint();
+  syncCountry(); syncTrack(); syncHealth(); setTab(tab,true); paint(); if(country) aim(0);
   loadFeed().then(()=>{ if(tab==="changes"&&layer==="nb") renderChanges(); syncFeedBadge(); });
   const p=layer==="nb"&&q.get("p"); if(p){const prov=ALL.find(x=>x.name===p); if(prov) openDetail(prov,true);}
   if(layer==="m") introPending=!country; else if(!country&&!p) showIntro();
