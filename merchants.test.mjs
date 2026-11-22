@@ -90,6 +90,9 @@ ok("a shop just over the border stays in its own country",
 ok("a country with no outline is unknown, not empty", inC(1, 1, "Z") === null && inC(1, 1, "D") === null);
 ok("unnamed outlines are ignored", !idx.by.has(""));
 
+ok("every no-outline territory opens on a real spot", Object.values(M.M_SPOTS).every(([lat, lng, z]) =>
+  Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && z >= 5 && z <= 14) && "Réunion" in M.M_SPOTS);
+
 console.log("");
 if (fail) { console.log(fail + " check(s) failed"); process.exit(1); }
 console.log("all merchant checks passed");

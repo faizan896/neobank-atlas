@@ -9,6 +9,11 @@
 const M_API = "https://api.btcmap.org/v4/places?limit=60000&fields=id,lat,lon,name,address,icon,verified_at,osm:payment:onchain,osm:payment:lightning";
 const M_ATLAS = "https://unpkg.com/world-atlas@2/countries-50m.json";
 const M_LEAFLET = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min";
+/* territories with no outline even at 50m and no city-state marker: where the street map should open */
+const M_SPOTS = {
+  "French Guiana":[4,-53,7], "Guadeloupe":[16.25,-61.58,10], "Martinique":[14.64,-61.02,10], "Mayotte":[-12.83,45.17,11],
+  "Réunion":[-21.12,55.53,10], "Tokelau":[-9.2,-171.85,9], "Tuvalu":[-8.52,179.2,9]
+};
 const M_COINS = ["BTC","LN","USDC","USDT","DAI","PYUSD"];
 const M_CATS = ["Coffee","Restaurant","Bar","Grocery","Retail","Electronics","Hotel","Pharmacy","Services","Other"];
 const M_CITIES = {
@@ -312,9 +317,11 @@ const MC = (()=>{
     else{
       if(wantFit && ready){
         wantFit = false;
-        const spot = set===null && CITY_STATES.find(c=>c.name===country);
-        if(spot) map.setView([spot.lat, spot.lng], 12, {animate:false});
-        else if(res.length && set!==null && (q || coins.size || country)) fit(res);
+        if(set===null){
+          const c = CITY_STATES.find(c=>c.name===country), spot = c ? [c.lat, c.lng, 12] : M_SPOTS[country];
+          if(spot) map.setView([spot[0], spot[1]], spot[2], {animate:false});
+        }
+        else if(res.length && (q || coins.size || country)) fit(res);
       }
       const b = map.getBounds();
       res = res.filter(p=>b.contains(p.ll));
@@ -325,7 +332,7 @@ const MC = (()=>{
       : set==="wait" ? "Finding merchants in "+country+"…"
       : res.length.toLocaleString()+(res.length===1?" merchant":" merchants")+where;
     $("m-src").textContent = src;
-    $("s-scope").textContent = country ? country.toUpperCase() : street ? "MAP VIEW" : "WORLDWIDE";
+    $("s-scope").textContent = country && !(set===null && street) ? country.toUpperCase() : street ? "MAP VIEW" : "WORLDWIDE";
     $("s-count").textContent = (loading || set==="wait") ? "" : res.length.toLocaleString()+(res.length===1?" MERCHANT":" MERCHANTS");
 
     const box = $("m-rows");
@@ -439,5 +446,5 @@ const MC = (()=>{
 })();
 
 if (typeof module !== "undefined" && module.exports)
-  module.exports = { M_STABLE, M_CACHE_V, mNormalize, mPack, mUnpack, mValid, mStale, mMatches, mSample,
+  module.exports = { M_STABLE, M_SPOTS, M_CACHE_V, mNormalize, mPack, mUnpack, mValid, mStale, mMatches, mSample,
     mIndex, mInCountry };
