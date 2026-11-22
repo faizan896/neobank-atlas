@@ -148,7 +148,7 @@ const MC = (()=>{
   let mode="globe", started=false, src="Source: BTC Map";
   let map=null, dots=null, markers=[], leaf=null, pin=null, pinLL=null;
   let geo=null, geoFine=false, geoWait=null, sets=new Map(), lastCountry=null, gTimer=null;
-  let merged=false, loading=true;
+  let merged=false, loading=true, wantFit=false;
 
   /* this browser's registrations are held here as well, so one still shows if storage refuses the write */
   let mine = null;
@@ -290,15 +290,22 @@ const MC = (()=>{
   function render(fly){
     if(!started || layer!=="m") return;
     const q = $("m-q").value.trim().toLowerCase();
-    if(country!==lastCountry){ lastCountry = country; if(country) fly = true; }
+    /* a move asked for while merchants or borders are still loading is kept until they arrive */
+    if(country!==lastCountry){ lastCountry = country; wantFit = !!country; }
+    if(fly) wantFit = true;
     const set = country ? countrySet() : true;
     let res = (set===true || set instanceof Set)
       ? all.filter(p=>mMatches(p, q, coins) && (set===true || set.has(p.id))) : [];
     shown = res; paintGlobe();
 
     const street = mode==="map" && !!map;
-    if(street){
-      if(fly && res.length && (q || coins.size || country)) fit(res);
+    const ready = !loading && set!=="wait";
+    if(!street){ if(ready) wantFit = false; }
+    else{
+      if(wantFit && ready){
+        wantFit = false;
+        if(res.length && (q || coins.size || country)) fit(res);
+      }
       const b = map.getBounds();
       res = res.filter(p=>b.contains(p.ll));
     }
